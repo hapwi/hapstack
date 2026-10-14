@@ -20,7 +20,7 @@ ${rule}
 ### PR mechanics
 ### Verdict and merge
 ### Boot recipe
-\`git show origin/main:\` hourly audit schedule status message
+Read the installed instructions under \`HAP_MODE_DIR\`. hourly audit schedule status message
 
 ## PR 1
 **Depends on.** None.

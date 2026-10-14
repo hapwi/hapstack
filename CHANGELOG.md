@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.2 - 2026-10-13
+
+- Correct shipping, forge selection, and T3 watcher routes while preserving the pstack playbooks.
+- Resolve bundled instructions and helper commands from the installed package, and honor project-first model settings in Arena and Swarm.
+- Restore verification-after-rebase rules with safeguards for base changes and explicit upstream attribution.
+- Clarify on-request versus workflow delegation and update plan validation for installed instruction paths.
+
 ## 0.3.1 - 2026-10-13
 
 - Add an original transparent Hapstack logo and OpenAI plugin/composer branding.

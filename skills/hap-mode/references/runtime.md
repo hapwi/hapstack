@@ -20,6 +20,8 @@ Use the smallest meaningful check for acceptance criteria and repository require
 
 Default delegation is `on-request`: ask only when needed, and spawn only when the user requests agents, parallel work, or a named multi-agent workflow such as arena, swarm, interrogate, or reflect. Selecting `workflow` permits the chosen recipe's delegation but never overrides a no-subagent instruction. When delegation is prohibited/unavailable, do feasible work locally and disclose missing independence/diversity. Never claim self-review is independent; if independence is an explicit completion criterion, report the blocker before delivery.
 
+Invoking hap-mode alone does not change `on-request` into `workflow`. With `on-request`, perform the playbook's grounding, design, implementation, and review phases in the current agent unless delegation was explicitly requested. Keep the skill triggers and reasoning steps; record delegated steps performed locally and disclose that their review was not independent. With `workflow`, run the prescribed delegates when supported and authorized. Explicit user and repository limits override either setting.
+
 Posting verdicts, filing backlog items, and sending notifications require action-specific authority. Otherwise prepare them locally. Do not weaken scope or approval gates to complete an autonomous run.
 
 ## Host model and delegation APIs
@@ -38,7 +40,7 @@ Top-level conversations are distinct from children. Use `t3_thread_launch`/`crea
 
 Choose the forge from the actual remotes and requested destination. `gh` is for GitHub; an installed Origin CLI is not a reason to choose Origin. Follow `ship` for versions, delivery, stacks, readiness, and proven-merged cleanup.
 
-On T3, call `link_pull_request` immediately for every created or actively worked PR and each stack layer. Creation and registration are separate. Before finishing reconcile `list_thread_pull_requests`. For monitor/watch/babysit requests use `watch_pull_request` and return; T3 supplies wakeups. Do not run the bundled watcher or another poller concurrently. Use `unwatch_pull_request` when handing work back.
+On T3, call `link_pull_request` immediately for every created or actively worked PR and each stack layer. Creation and registration are separate. Before finishing reconcile `list_thread_pull_requests`. For monitor/watch/babysit requests use `watch_pull_request` and return; T3 supplies wakeups. A one-time status check reads the current forge state and reports it without arming a watch. Do not run the bundled watcher or another poller concurrently. Use `unwatch_pull_request` when handing work back.
 
 Elsewhere, `watch-pr` is an optional GitHub helper requiring Bun and authenticated `gh`. Its Cursor Bugbot recognition concerns an optional GitHub reviewer, not a Cursor runtime dependency. `orch` stores program state; its Graphite frontier command is optional and requires Graphite. Use actual branch/PR ancestry or the host's stack inventory when Graphite is absent. Never install it automatically.
 
@@ -49,6 +51,8 @@ Bounded continuation of an active task is different from persistent hourly/webho
 On T3 use `schedule_task` with structured triggers such as `{"type":"interval","everyMs":3600000}` or `{"type":"webhook"}`. Include request data in the prompt through supported placeholders such as `{{body.action}}`/`{{body}}`; no separate event block is implied. Retain task IDs and inspect existing tasks before retries/updates. Use the returned webhook URL; report missing remote-access prerequisites if none is returned. On other hosts use documented scheduling. Never activate schedules as an installation smoke test.
 
 ## Tools, history, authoring, and secrets
+
+Resolve `HAP_MODE_DIR` to the absolute installed directory containing the hap-mode `SKILL.md`, following skill-directory symlinks to the bundle. This is a task-local path, not a setting to commit. Read bundled playbooks and run helpers relative to that directory, with quoted paths and the target project's working directory preserved. For example, run `node "$HAP_MODE_DIR/scripts/check-plan.mjs" <plan.md>`. Never assume the target project's Git history contains Hapstack. Re-read installed instructions at audit ticks. A delegate on another host resolves its own installed directory; report missing files or runtimes rather than guessing paths or installing tools.
 
 Use the current tool catalog; never assume a `mcps/` directory, private API, cloud agent, or skill-authoring tool exists. Prefer host controls. On T3 browser work starts with `preview_status` and, when necessary, `preview_open`; follow the collaborative preview ownership rules. The bundled control skills cover shell/PTY and UI equivalents with honest unavailable-surface reporting.
 

@@ -22,7 +22,7 @@ Every candidate gets the same prompt, so the prompt is the contract.
 
 1. State the artifact each candidate is producing.
 2. Derive the rubric, 3-6 concrete gradeable criteria for what success looks like on *this* task. It is the picker's tool in Phase D. Candidates only see the task.
-3. Pick the runners. Use the `arena runners` line in `~/.config/hapstack/config.md`. If the rule or that line is missing, default to one each on `inherit-parent` and `inherit-parent`. An `auto` or `inherit-parent` entry in this line or the cross-judge line means the parent model, so omit `model` for it. Resolve configured models against the live catalog using the runtime contract. If an entry is unavailable, report it and obtain a supported choice; never guess an ID or claim model diversity that is unavailable.
+3. Pick the runners. Resolve `arena runners` through the runtime contract's project-first, XDG-aware configuration lookup. If that role is missing, default to one each on `inherit-parent` and `inherit-parent`. An `auto` or `inherit-parent` entry in this line or the cross-judge line means the parent model, so omit `model` for it. Resolve configured models against the live catalog using the runtime contract. If an entry is unavailable, report it and obtain a supported choice; never guess an ID or claim model diversity that is unavailable.
 4. Give each candidate its own output location (a git worktree where possible, otherwise `/tmp/arena-<slug>/candidate-<n>/`), per the **separate-before-serializing-shared-state** principle skill.
 
 ## Phase B: Fan out
@@ -33,7 +33,7 @@ If a candidate produces no output, proceed with N-1 and note the dropout.
 
 ## Phase C: Cross-judge
 
-After all Phase B candidates complete, choose one model from the `arena cross-judge pool` line in `~/.config/hapstack/config.md`. If the rule or that line is missing, choose from `inherit-parent` and `inherit-parent`. Prefer a different model family from the parent's. Spawn one readonly judge subagent on that model. It sees the rubric and the candidates by path label, scores each criterion, and recommends a base with rationale. It runs in parallel with your reading in Phase D. Don't spawn it while candidates are still writing.
+After all Phase B candidates complete, choose one model from `arena cross-judge pool` in the same resolved configuration. If that role is missing, choose from `inherit-parent` and `inherit-parent`. Prefer a different model family from the parent's. Spawn one readonly judge subagent on that model. It sees the rubric and the candidates by path label, scores each criterion, and recommends a base with rationale. It runs in parallel with your reading in Phase D. Don't spawn it while candidates are still writing.
 
 ## Phase D: Pick a base
 

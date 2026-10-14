@@ -1,6 +1,6 @@
 {
   "name": "hapstack",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Portable engineering workflows, React diagnostics, and scoped shipping for coding agents.",
   "author": {
     "name": "Hapstack contributors"
