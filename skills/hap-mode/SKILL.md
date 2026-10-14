@@ -99,7 +99,7 @@ Give candid judgments. Decline an unnecessary change when it does not earn its p
 
 ## Subagents
 
-Use the host mappings in [the runtime contract](references/runtime.md), the operator's delegation policy, and live model discovery. Pass the actual hap-mode path and `agents/hap-agent.md` when a delegate should follow this style. Routed review skills can use their own prompt templates. Read-only and background execution are host capabilities, not assumed fields.
+Use the host mappings in [the runtime contract](references/runtime.md), the operator's delegation policy, and live model discovery. Pass the actual hap-mode path and `references/agents/hap-agent.md` when a delegate should follow this style. Routed review skills can use their own prompt templates. Read-only and background execution are host capabilities, not assumed fields.
 
 You own each delegate's results. Inspect the actual artifact and report your conclusion. A second opinion uses the same original brief against another available model when configured; do not invent diversity.
 

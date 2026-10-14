@@ -8,7 +8,7 @@ license: MIT
 
 # Hapstack help
 
-Read the package README and [runtime contract](../hap-mode/references/runtime.md). Answer the user's specific question with the relevant installed file; read it before describing its rules. Do not run a workflow merely because you are explaining it.
+Read the [package README](https://github.com/hapwi/hapstack/blob/main/README.md) and [runtime contract](../hap-mode/references/runtime.md). Answer the user's specific question with the relevant installed file; read it before describing its rules. Do not run a workflow merely because you are explaining it.
 
 - Setup and model/budget preferences: [setup-hapstack](../setup-hapstack/SKILL.md) and its configuration reference.
 - Task routing: [hap-mode](../hap-mode/SKILL.md). Patch-to-score and shipping route to patcher and ship, overriding generic playbook triggers.
@@ -17,7 +17,7 @@ Read the package README and [runtime contract](../hap-mode/references/runtime.md
 - Verification: tdd, benchmark-checklist, create-verification-skill, maintain-verification-skill, control-ui, control-cli.
 - Writing and code cleanup: unslop, bro, technical-writing, deslop, no-comments.
 - Long work and learning: figure-it-out, show-me-your-work, reflect, correct, automate-me, make-bot-ui, and the orchestration/autonomy playbooks.
-- Every skill and principle: [catalogue](../../CATALOG.md). Detailed guidance: [guide](../../docs/guide/README.md).
+- Every skill and principle: [catalogue](https://github.com/hapwi/hapstack/blob/main/CATALOG.md). Detailed guidance: [guide](https://github.com/hapwi/hapstack/blob/main/docs/guide/README.md).
 
 In Codex use $hap-mode and $setup-hapstack. Other hosts use their documented slash or plugin-qualified form. T3 consumes provider-discovered skills and supplies its existing MCP tools; Hapstack itself ships no MCP server. Host discovery and persistent custom modes vary. If a picker omits a skill, verify the actual installation path or explicitly point the agent to its file.
 

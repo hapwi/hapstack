@@ -6,21 +6,29 @@ Use **hap-mode** as the entry point. It routes a task to the right skill or play
 
 ## Install
 
-A compatible Agent Plugins client can load the root plugin.json. For coding agents that discover Agent Skills directly, use the [skills CLI](https://github.com/vercel-labs/skills):
+With Bun and Git installed, run:
 
 ~~~bash
-npx skills add hapwi/hapstack --skill '*' -g -a codex -a claude-code
+bunx github:hapwi/hapstack
 ~~~
 
-Use your existing runner: `bun x skills` is the Bun equivalent, and configured Vite+ projects can use `vp dlx skills`. The commands below use standard npm/npx.
+This runs the installer directly from this public GitHub repository. No Hapstack npm publication is required. It installs all skills globally for Codex and Claude Code, backing up existing same-name skills first. Backups are stored outside the installed skill directories under the operator's XDG state directory or home-derived state directory. They can contain private customized skills; do not publish them.
 
-Add `-a cursor` for Cursor. Omit `-g` for installation into one project. Install the whole set: workflows reference sibling skills and their resources. Inspect existing same-name skills first; do not overwrite customized patcher, ship, or other skills without deciding which source should own them. Choose one installation scope to avoid duplicate discovery. Nothing requires installing both a plugin copy and a separate skill copy.
-
-To inspect the package before installing:
+For one project, run it from the project root:
 
 ~~~bash
-npx skills add hapwi/hapstack --list
+bunx github:hapwi/hapstack --project
 ~~~
+
+Use `--agent cursor` or repeat `--agent` to choose providers. `--list` inspects the bundle without installing. `--help` shows the available options. The installer does not configure models, run diagnostics, ship work, or activate jobs.
+
+A compatible Agent Plugins client can also load root plugin.json. For the underlying [skills CLI](https://github.com/vercel-labs/skills), the equivalent is:
+
+~~~bash
+bunx skills add hapwi/hapstack --skill '*' -g -a codex -a claude-code
+~~~
+
+Unlike the Hapstack entry point, calling the skills CLI directly does not perform Hapstack's backups. Standard npm users can use `npx skills` instead of `bunx skills`; configured Vite+ projects can use `vp dlx skills`. Choose one installation scope to avoid duplicate discovery. Install the whole set because workflows reference sibling resources.
 
 Start a new agent session or use the host's documented skill reload. T3 Code uses the skills available to the selected underlying provider; this is not a new T3 MCP server. If the picker does not show a skill, verify provider discovery or explicitly point the agent to the installed SKILL.md rather than claim installation succeeded.
 
