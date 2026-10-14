@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0 - 2026-10-13
+
+- Show concise provider status with terminal colors and animated progress, keeping host logs behind `--verbose`.
+- Check actual installed versions against the selected source and ask before updating existing plugins or skill links. Use `--yes` for unattended updates; the default prompt answer is No.
+- Keep status read-only, add `status --json`, and distinguish unavailable update checks from an up-to-date installation.
+- Preserve partial installation records and show actionable host errors without changing backup and restoration rules.
+
 ## 0.3.2 - 2026-10-13
 
 - Correct shipping, forge selection, and T3 watcher routes while preserving the pstack playbooks.

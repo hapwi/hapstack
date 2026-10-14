@@ -14,18 +14,22 @@ With Bun and Git installed, run:
 bunx github:hapwi/hapstack
 ~~~
 
-When upgrading from the 0.2 copy installer, Bun may reuse its cached download. Use `bunx github:hapwi/hapstack#main --help` and that explicit source for install, status, uninstall, and migration if needed. The new help starts with `Hapstack 0.3.2` and lists the lifecycle commands.
+When upgrading from the 0.2 copy installer, Bun may reuse its cached download. Use `bunx github:hapwi/hapstack#main --help` and that explicit source for install, status, uninstall, and migration if needed. The new help starts with `Hapstack 0.4.0` and lists the lifecycle commands.
 
 This installs Hapstack as **one native plugin per provider**, using the Codex and Claude Code plugin managers. Both selected providers need a plugin-capable CLI. It does not copy the bundled skills into your standalone skill folders or replace your personal patcher/ship. Each host owns the plugin cache, namespace, and enabled state. No Hapstack npm publication or MCP server is required.
 
 Use `--agent codex` or `--agent claude-code` to select one provider. `--list` lists bundled skills without installing. `--help` shows options.
+
+The installer shows concise provider results with colors and animated progress in supported terminals. It compares actual host versions with the selected source and asks once before updating existing installations. The default answer is No. Use `--yes` to approve updates unattended; redirected input skips updates without that flag. Fresh installations still run when requested. Existing skill links also require confirmation before being refreshed.
 
 ~~~bash
 bunx github:hapwi/hapstack status
 bunx github:hapwi/hapstack uninstall
 ~~~
 
-Status shows the private installation record and the selected hosts' actual plugin inventory. Uninstall delegates to the native plugin manager. Settings, backups, and marketplace registrations remain; remove a registration separately only when you no longer want it as an install source.
+Status shows installed versions, enabled state when reported by the host, and available updates without changing installations or the private record. GitHub sources are checked with a bounded read-only request; local sources use their manifest. Offline or unsupported sources show "update unknown". If the installer itself is older than the source, fetch a fresh installer before updating skill links.
+
+Use `status --json` for machine-readable results and `--verbose` for host logs and diagnostic paths. Colors are disabled for redirected output, `TERM=dumb`, or `NO_COLOR`. Uninstall delegates to the native plugin manager. Settings, backups, and marketplace registrations remain; remove a registration separately only when you no longer want it as an install source.
 
 ### Native host commands
 
