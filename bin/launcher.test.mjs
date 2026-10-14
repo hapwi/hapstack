@@ -62,6 +62,10 @@ test('invalid remote commits are not executable package references', async () =>
   assert.equal(result.kind, 'unavailable');
 });
 
+test('cache migration cannot replace this launcher with an older published CLI', async () => {
+  await assert.rejects(launch({ version: '0.4.1', args: ['refresh-cli'], env: {}, ...source('0.4.0'), run: () => assert.fail('downgrade') }), /older than this launcher/);
+});
+
 test('targeted migration refreshes only the owned canonical Hapstack cache and never unrelated sources', async () => {
   const directory = mkdtempSync(join(tmpdir(), 'hapstack-cache-test-'));
   const uid = process.getuid?.() ?? 0;

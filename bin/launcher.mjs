@@ -45,6 +45,9 @@ export async function launch({ version, args, env = process.env, fetch_ = fetch,
     report(`CLI update check unavailable. Using cached ${version}. ${error.message}`);
     return { kind: 'unavailable' };
   }
+  if (args[0] === 'refresh-cli' && compareVersions(latest, version) < 0) {
+    throw new Error('The published CLI is older than this launcher. Cache refresh was skipped.');
+  }
   if (compareVersions(latest, version) <= 0) return { kind: 'local', sha };
 
   report(`Loading Hapstack CLI ${latest}…`);
