@@ -6,7 +6,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
-const cli = fileURLToPath(new URL('./hapstack.mjs', import.meta.url));
+const cli = fileURLToPath(new URL('./cli.mjs', import.meta.url));
 function fixture() { return mkdtempSync(join(tmpdir(), 'hapstack-test-')); }
 function run(cwd, ...args) {
   const result = spawnSync(process.execPath, [cli, ...args, '--project', '--source', resolve(dirname(cli), '..')], { cwd, encoding: 'utf8' });

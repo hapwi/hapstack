@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1 - 2026-10-14
+
+- Add a stable launcher that refreshes a stale CLI through an exact source commit while preserving arguments, terminal prompts, and exit status.
+- Keep cached CLI use explicit when GitHub cannot be checked, and prevent recursive or mismatched release handoffs.
+- Add a targeted `refresh-cli` migration for older unqualified Bun cache entries without clearing other packages or changing installed plugins.
+
 ## 0.4.0 - 2026-10-13
 
 - Show concise provider status with terminal colors and animated progress, keeping host logs behind `--verbose`.

@@ -14,7 +14,15 @@ With Bun and Git installed, run:
 bunx github:hapwi/hapstack
 ~~~
 
-When upgrading from the 0.2 copy installer, Bun may reuse its cached download. Use `bunx github:hapwi/hapstack#main --help` and that explicit source for install, status, uninstall, and migration if needed. The new help starts with `Hapstack 0.4.0` and lists the lifecycle commands.
+The launcher checks the current CLI release before running a command. A cached launcher hands off to a newer CLI using its exact Git commit, preserving your arguments and terminal prompts. If the check is unavailable, it reports that and uses the cached CLI. Plugin updates still require confirmation.
+
+If Bun cached an installer from before 0.4.1, refresh that short-command entry once:
+
+~~~bash
+bunx "github:hapwi/hapstack#$(git ls-remote https://github.com/hapwi/hapstack.git HEAD | cut -f1)" refresh-cli
+~~~
+
+This refreshes only the owned Bun cache entry whose sole dependency is the unqualified Hapstack GitHub source. It does not clear other packages or install plugins. Targeted cache migration requires a platform that reports the current user's file ownership. After the refresh, use `bunx github:hapwi/hapstack` and `bunx github:hapwi/hapstack status` normally. On other platforms, use the commit-pinned command until Bun refreshes its old cache. The current help starts with `Hapstack 0.4.1`.
 
 This installs Hapstack as **one native plugin per provider**, using the Codex and Claude Code plugin managers. Both selected providers need a plugin-capable CLI. It does not copy the bundled skills into your standalone skill folders or replace your personal patcher/ship. Each host owns the plugin cache, namespace, and enabled state. No Hapstack npm publication or MCP server is required.
 
