@@ -98,7 +98,7 @@ Without setup, use the current model, delegation on request, existing tooling, a
 - Bundled deslop plus portable control-ui/control-cli adapters.
 - Agent briefs, the ten-part guide, orchestration and PR helper sources, and the dormant Benny automation pack.
 
-That is **58 top-level skills**. Principle skills are included in that total. Benny's three nested automation instruction files are separate from top-level skill discovery. See [the catalogue](CATALOG.md) and [the guide](docs/guide/README.md).
+That is **58 top-level skills**. Principle skills are included in that total. Benny's three nested automation instruction files are separate from top-level skill discovery. See [the catalogue](CATALOG.md) and [the guide](docs/guide/README.md). An [interactive catalogue](docs/catalogue.html) is included for browsing locally in a web browser.
 
 ## How the mode routes work
 
