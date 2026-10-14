@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1 - 2026-10-13
+
+- Add an original transparent Hapstack logo and OpenAI plugin/composer branding.
+- Align help and catalogue descriptions with native skill names and comment-review scope.
+- Record the installed native plugin version reported by the host when refreshing an existing installation.
+
 ## 0.3.0 - 2026-10-13
 
 - Use native Codex and Claude plugin installation by default, with portable and Claude marketplace catalogs.

@@ -1,8 +1,10 @@
 {
   "name": "hapstack",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Portable engineering workflows, React diagnostics, and scoped shipping for coding agents.",
-  "author": { "name": "Hapstack contributors" },
+  "author": {
+    "name": "Hapstack contributors"
+  },
   "homepage": "https://github.com/hapwi/hapstack",
   "repository": "https://github.com/hapwi/hapstack",
   "license": "MIT"

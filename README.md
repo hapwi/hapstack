@@ -1,5 +1,7 @@
 # Hapstack
 
+<img src="assets/hapstack-logo.png" alt="Hapstack stacked H logo" width="112" />
+
 Hapstack is a portable engineering workflow plugin built from Lauren Tan's [pstack](https://github.com/cursor/plugins/tree/main/pstack), with reusable React diagnostics and project-aware shipping.
 
 Use **hap-mode** as the entry point. It routes a task to the right skill or playbook. **patch to 100** uses the bundled patcher; **ship this** uses the bundled ship. Other requests use the adapted pstack workflows and engineering principles.
@@ -12,7 +14,7 @@ With Bun and Git installed, run:
 bunx github:hapwi/hapstack
 ~~~
 
-When upgrading from the 0.2 copy installer, Bun may reuse its cached download. Use `bunx github:hapwi/hapstack#main --help` and that explicit source for install, status, uninstall, and migration if needed. The new help starts with `Hapstack 0.3.0` and lists the lifecycle commands.
+When upgrading from the 0.2 copy installer, Bun may reuse its cached download. Use `bunx github:hapwi/hapstack#main --help` and that explicit source for install, status, uninstall, and migration if needed. The new help starts with `Hapstack 0.3.1` and lists the lifecycle commands.
 
 This installs Hapstack as **one native plugin per provider**, using the Codex and Claude Code plugin managers. Both selected providers need a plugin-capable CLI. It does not copy the bundled skills into your standalone skill folders or replace your personal patcher/ship. Each host owns the plugin cache, namespace, and enabled state. No Hapstack npm publication or MCP server is required.
 

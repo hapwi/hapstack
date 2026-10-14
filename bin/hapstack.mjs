@@ -83,6 +83,11 @@ function nativeAvailable(agent) {
   const result = spawnSync(agent === 'claude-code' ? 'claude' : agent, ['plugin', agent === 'codex' ? 'add' : 'install', '--help'], { encoding: 'utf8' });
   return result.status === 0 && /Install a plugin/i.test(result.stdout);
 }
+function nativeInventory(agent) {
+  const inventory = JSON.parse(run(agent, ['plugin', 'list', ...(agent === 'codex' ? ['--marketplace', 'hapstack'] : []), '--json'], true));
+  const entries = agent === 'codex' ? inventory.installed : inventory;
+  return entries.filter(entry => (entry.pluginId || entry.id) === 'hapstack@hapstack');
+}
 function hashTree(path) {
   const hash = createHash('sha256');
   function walk(path_, rel) {
@@ -157,7 +162,9 @@ function install() {
       if (receipt.agents[agent] && gitSource) run(agent, ['plugin', 'marketplace', agent === 'codex' ? 'upgrade' : 'update', 'hapstack']);
       run(agent, ['plugin', agent === 'codex' ? 'add' : 'install', 'hapstack@hapstack']);
       if (receipt.agents[agent] && gitSource && agent === 'claude-code') run(agent, ['plugin', 'update', 'hapstack@hapstack']);
-      receipt.agents[agent] = { strategy, version, source, installedAt: new Date().toISOString() };
+      const installed = nativeInventory(agent)[0];
+      if (!installed?.version) fail(`${agent} did not report an installed Hapstack version.`);
+      receipt.agents[agent] = { strategy, version: installed.version, source, installedAt: new Date().toISOString() };
       save();
       continue;
     }
@@ -216,9 +223,7 @@ function status() {
     const record = receipt.agents[agent];
     console.log(`${agent}: ${record ? `${record.strategy}, recorded version ${record.version}` : 'not recorded by this installer'}`);
     if (record?.strategy === 'native') {
-      const inventory = JSON.parse(run(agent, ['plugin', 'list', ...(agent === 'codex' ? ['--marketplace', 'hapstack'] : []), '--json'], true));
-      const entries = agent === 'codex' ? inventory.installed : inventory;
-      console.log(JSON.stringify(entries.filter(entry => (entry.pluginId || entry.id) === 'hapstack@hapstack'), null, 2));
+      console.log(JSON.stringify(nativeInventory(agent), null, 2));
     }
   }
   for (const entry of receipt.links) if (selected.some(agent => directories[agent] === entry.root)) console.log(`${linkPath(entry)} -> ${entry.target} [${owned(entry) ? 'owned' : 'missing or changed'}]${entry.backup ? `; original: ${entry.backup}` : ''}`);
