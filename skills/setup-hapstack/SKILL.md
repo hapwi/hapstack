@@ -20,4 +20,4 @@ Configure the package for the operator's actual host and preferences. Setup is n
 8. Read it back and verify the resolved configuration matches the choices. Report location, budget, role choices, relevant gaps, and settings used on the next invocation. Do not spawn agents, run diagnostics, create automations, ship, or make billable requests solely to check setup.
 9. If the user wants a missing project verification harness, route to `create-verification-skill`. Otherwise finish. Setup does not require a new harness.
 
-On Codex invoke `$setup-hapstack`; on slash-based hosts use their supported command form. If discovery is unavailable, direct the agent to this file and report that discovery has not been verified. Installation is documented in the package README.
+On Codex invoke `$hapstack:setup-hapstack` for the native plugin or `$setup-hapstack` for linked standalone skills. On slash-based hosts use their supported command form, such as `/hapstack:setup-hapstack` for a native Claude plugin. If discovery is unavailable, direct the agent to this file and report that discovery has not been verified. Installation is documented in the package README.

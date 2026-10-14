@@ -12,38 +12,75 @@ With Bun and Git installed, run:
 bunx github:hapwi/hapstack
 ~~~
 
-This runs the installer directly from this public GitHub repository. No Hapstack npm publication is required. It installs all skills globally for Codex and Claude Code, backing up existing same-name skills first. Backups are stored outside the installed skill directories under the operator's XDG state directory or home-derived state directory. They can contain private customized skills; do not publish them.
+This installs Hapstack as **one native plugin per provider**, using the Codex and Claude Code plugin managers. Both selected providers need a plugin-capable CLI. It does not copy the bundled skills into your standalone skill folders or replace your personal patcher/ship. Each host owns the plugin cache, namespace, and enabled state. No Hapstack npm publication or MCP server is required.
 
-For one project, run it from the project root:
+Use `--agent codex` or `--agent claude-code` to select one provider. `--list` lists bundled skills without installing. `--help` shows options.
 
 ~~~bash
+bunx github:hapwi/hapstack status
+bunx github:hapwi/hapstack uninstall
+~~~
+
+Status shows the private installation record and the selected hosts' actual plugin inventory. Uninstall delegates to the native plugin manager. Settings, backups, and marketplace registrations remain; remove a registration separately only when you no longer want it as an install source.
+
+### Native host commands
+
+The Codex equivalent is:
+
+~~~bash
+codex plugin marketplace add hapwi/hapstack
+codex plugin add hapstack@hapstack
+codex plugin remove hapstack@hapstack
+~~~
+
+For Claude Code:
+
+~~~bash
+claude plugin marketplace add hapwi/hapstack
+claude plugin install hapstack@hapstack
+claude plugin uninstall hapstack@hapstack
+~~~
+
+The repository includes both catalogs and a Claude compatibility manifest alongside the portable root manifest. A catalog makes Hapstack installable from this repository; it does not place it in a host's universal public directory. ChatGPT desktop clients that support local marketplaces can browse the registered Codex source; availability and permissions depend on that client. The setup skill is declared as OpenAI onboarding, so supported clients can offer it after installation.
+
+### Skill-only clients and project installs
+
+For a client without native plugins, explicitly use tracked skill links:
+
+~~~bash
+bunx github:hapwi/hapstack --skills
+bunx github:hapwi/hapstack --agent cursor
 bunx github:hapwi/hapstack --project
 ~~~
 
-Use `--agent cursor` or repeat `--agent` to choose providers. `--list` inspects the bundle without installing. `--help` shows the available options. The installer does not configure models, run diagnostics, ship work, or activate jobs.
+Global linked installs keep a single bundle under `$XDG_DATA_HOME/hapstack/packages/` or `~/.local/share/hapstack/packages/`. Only discovery links go into each selected provider's skill folder. Project installs keep the bundle and record under `.agents/hapstack/` and use links in that project. `--project` selects this compatibility path rather than changing a global plugin installation. Add that generated directory and provider links to your project's ignore rules if you want the installation to stay local.
 
-A compatible Agent Plugins client can also load root plugin.json. For the underlying [skills CLI](https://github.com/vercel-labs/skills), the equivalent is:
+The private global receipt is `$XDG_STATE_HOME/hapstack/install.json` or `~/.local/state/hapstack/install.json`. It records owned links, bundle hashes, source/version, and original backups. Same-name skills are backed up before replacement. Uninstall removes only links still pointing to their recorded targets and restores originals. Replaced links and edited bundles are preserved and reported. Do not publish receipts or backups: they can contain private paths or customized skills. `--backup-dir PATH` changes the backup destination. Uninstall does not remove setup preferences or backups. Use the same scope and providers for status/removal; for example, `uninstall --project --agent cursor`.
+
+### Migrate a 0.2 copied installation
+
+First run the new native installer. Then supply the original backup directory printed by the old installer:
 
 ~~~bash
-bunx skills add hapwi/hapstack --skill '*' -g -a codex -a claude-code
+bunx github:hapwi/hapstack migrate --legacy-backup /path/to/original-backup
 ~~~
 
-Unlike the Hapstack entry point, calling the skills CLI directly does not perform Hapstack's backups. Standard npm users can use `npx skills` instead of `bunx skills`; configured Vite+ projects can use `vp dlx skills`. Choose one installation scope to avoid duplicate discovery. Install the whole set because workflows reference sibling resources.
+Migration requires recorded native installs for the selected providers. It archives only standalone directories whose entire contents match the recorded 0.2.0 fingerprints or the current bundled skills, then restores original same-name skills where that backup contains them. Changed or unrelated skills and untracked symlinks remain in place and are reported. The archived copies and original backups remain private. Resolve non-matching skills individually instead of treating their names as proof of ownership. Do not manually delete every skill matching the catalogue.
 
-Start a new agent session or use the host's documented skill reload. T3 Code uses the skills available to the selected underlying provider; this is not a new T3 MCP server. If the picker does not show a skill, verify provider discovery or explicitly point the agent to the installed SKILL.md rather than claim installation succeeded.
+Start a new agent session after installation or migration. T3 Code uses the selected provider's plugin/skill discovery; this package does not add a T3 MCP server. Native skill names may be plugin-qualified in the picker. Choose Hapstack's `hap-mode`, which routes to its bundled siblings even when you have personal skills with the same names. If a T3/provider version doesn't surface native plugin skills, use the tracked skill-link install after uninstalling that provider's native plugin. Discovery in a running session is not guaranteed.
 
 ## Setup
 
-In a Codex thread:
+For a native Codex plugin in T3 Code or Codex:
 
 ~~~text
-$setup-hapstack
-$hap-mode patch to 100
-$hap-mode ship this
-$hap-mode patch to 100 then ship
+$hapstack:setup-hapstack
+$hapstack:hap-mode patch to 100
+$hapstack:hap-mode ship this
+$hapstack:hap-mode patch to 100 then ship
 ~~~
 
-On slash-based hosts use the supported slash form, which may be plugin-qualified. Exact picker syntax and persistent modes are host features.
+For linked standalone skills, use `$setup-hapstack` and `$hap-mode` instead. For a native Claude plugin, use `/hapstack:setup-hapstack` and `/hapstack:hap-mode patch to 100`. On other hosts use the supported picker form, which may be plugin-qualified. Exact picker syntax and persistent modes are host features.
 
 Setup detects capabilities, discovers available models, lets you choose a reasoning budget and role/panel models, and selects delegation, tooling, and versioning preferences. It writes user settings outside the package. Project `.agent-workflow/hapstack.md` takes precedence over global `$XDG_CONFIG_HOME/hapstack/config.md` or `~/.config/hapstack/config.md`. Paths resolve for the current operator. See [configuration](skills/setup-hapstack/references/configuration.md).
 
@@ -83,7 +120,7 @@ A public repo or portable manifest does not prove every workflow works on every 
 
 ## Updates and attribution
 
-This is an independent adaptation, not an official Cursor or pstack release. [UPSTREAM](UPSTREAM) pins the source revision. Upstream changes are incorporated deliberately so they do not overwrite Hapstack's routing, user settings, or portable patcher/ship behavior. Existing personal skill installations remain separate until their owner chooses to migrate.
+This is an independent adaptation, not an official Cursor or pstack release. [UPSTREAM](UPSTREAM) pins the source revision. Upstream changes are incorporated deliberately so they do not overwrite Hapstack's routing, user settings, or portable patcher/ship behavior. Native installation keeps personal skills separate; migration restores originals replaced by the earlier copy installer.
 
 MIT licensed. [LICENSE](LICENSE) retains upstream copyright. [CREDITS.md](CREDITS.md) records the original authorship and adaptation. No private conversation, machine directory, credentials, or user configuration belongs in this repository.
 

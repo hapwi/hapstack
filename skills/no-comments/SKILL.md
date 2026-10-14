@@ -1,7 +1,7 @@
 ---
 name: no-comments
-description: Spawn Comment Sicko, fix accepted findings, and offer encodings for claimed
-  constraints.
+description: Review unnecessary comments in the current diff by default, or in explicitly
+  named files or the whole project. Fix accepted findings and offer constraint encodings.
 license: MIT
 ---
 
@@ -19,6 +19,10 @@ Defer to Comment Sicko's fresh perspective.
 ## Scope
 
 Use the caller's files or diff. Otherwise use the current diff against the base branch, default `main`, including the working tree.
+
+An explicit whole-project request includes unchanged source files. Local files do not need to be committed to be in scope. Exclude generated files, dependencies, and vendored code unless explicitly included.
+
+Before starting, state which scope will be inspected. If the default diff is empty, say that no files were inspected and that this establishes nothing about comments in existing code. Give the invocation `no-comments on the entire project, including unchanged files` for that scope. Never report an empty diff as a project with no comments, and do not silently expand a diff request into project-wide edits.
 
 ## Steps
 

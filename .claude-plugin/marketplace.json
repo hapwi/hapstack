@@ -1,0 +1,12 @@
+{
+  "name": "hapstack",
+  "metadata": { "description": "Portable Hapstack engineering workflows." },
+  "owner": { "name": "Hapstack contributors" },
+  "plugins": [
+    {
+      "name": "hapstack",
+      "source": "./",
+      "description": "Portable engineering workflows, React diagnostics, and scoped shipping."
+    }
+  ]
+}

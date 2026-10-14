@@ -1,7 +1,7 @@
 interface:
   display_name: Hap mode
   short_description: Route tasks through portable engineering workflows
-  default_prompt: Use $hap-mode to carry out this task with the appropriate Hapstack
-    skill or playbook.
+  default_prompt: Use the attached Hapstack mode ($hapstack:hap-mode for native plugins,
+    $hap-mode for standalone skills) to carry out this task.
 policy:
   allow_implicit_invocation: false

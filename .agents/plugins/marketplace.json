@@ -1,0 +1,12 @@
+{
+  "name": "hapstack",
+  "interface": { "displayName": "Hapstack" },
+  "plugins": [
+    {
+      "name": "hapstack",
+      "source": { "source": "local", "path": "./" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+      "category": "Developer Tools"
+    }
+  ]
+}
