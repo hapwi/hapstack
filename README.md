@@ -12,6 +12,8 @@ With Bun and Git installed, run:
 bunx github:hapwi/hapstack
 ~~~
 
+When upgrading from the 0.2 copy installer, Bun may reuse its cached download. Use `bunx github:hapwi/hapstack#main --help` and that explicit source for install, status, uninstall, and migration if needed. The new help starts with `Hapstack 0.3.0` and lists the lifecycle commands.
+
 This installs Hapstack as **one native plugin per provider**, using the Codex and Claude Code plugin managers. Both selected providers need a plugin-capable CLI. It does not copy the bundled skills into your standalone skill folders or replace your personal patcher/ship. Each host owns the plugin cache, namespace, and enabled state. No Hapstack npm publication or MCP server is required.
 
 Use `--agent codex` or `--agent claude-code` to select one provider. `--list` lists bundled skills without installing. `--help` shows options.
