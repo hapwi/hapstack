@@ -1,0 +1,10 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.agent-workflow/hapstack.md
+.agent-workflow/benny/
+.DS_Store
+__pycache__/
+*.pyc
+

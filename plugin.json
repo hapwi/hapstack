@@ -1,0 +1,19 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "hapstack",
+  "version": "0.1.0",
+  "description": "Portable engineering workflows, React diagnostics, and scoped shipping for coding agents.",
+  "author": {
+    "name": "Hapstack contributors"
+  },
+  "homepage": "https://github.com/hapwi/hapstack",
+  "repository": "https://github.com/hapwi/hapstack",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "engineering",
+    "workflows",
+    "react-doctor",
+    "shipping"
+  ]
+}

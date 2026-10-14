@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ship"
+  short_description: "Deliver scoped work using the project’s release policy"
+  default_prompt: "Use $ship to deliver the scoped PR or local work to the configured remote’s default branch, follow its versioning and changelog policy, and clean up safely merged PR branches."

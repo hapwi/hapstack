@@ -1,0 +1,5 @@
+interface:
+  display_name: Setup Hapstack
+  short_description: Configure portable workflow and model preferences
+  default_prompt: Use $setup-hapstack to configure supported models, budget, delegation,
+    tooling, and shipping preferences.

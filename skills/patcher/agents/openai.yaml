@@ -1,0 +1,4 @@
+interface:
+  display_name: "Patcher"
+  short_description: "Diagnose and fix React and configured lint findings"
+  default_prompt: "Use $patcher to diagnose and fix requested React and configured lint findings locally, preserving the existing tooling; run Improve only when explicitly requested."
