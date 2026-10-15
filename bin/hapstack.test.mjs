@@ -60,6 +60,8 @@ test('uninstall preserves a link replaced with unrelated content and edited bund
     writeFileSync(join(record.packages[0].path, 'skills/ship/custom'), 'edited bundle');
     const output = run(root, 'uninstall');
     assert.match(output, /Preserved changed\/unrelated path/);
+    assert.match(output, /Some managed links were kept/);
+    assert.doesNotMatch(output, /Hapstack removed\.|Nothing to remove\./);
     assert.equal(readFileSync(join(path, 'private'), 'utf8'), 'custom');
     assert(existsSync(record.packages[0].path));
   } finally { rmSync(root, { recursive: true }); }
@@ -150,7 +152,7 @@ test('status reports host versions and updates without mutations or receipt writ
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stdout, /Codex\s+0\.3\.1.*Out of date/);
     assert.match(result.stdout, /Claude Code\s+0\.3\.1.*Out of date/);
-    assert.match(result.stdout, /Run bunx github:hapwi\/hapstack to update to the latest version/);
+    assert.match(result.stdout, /Run bunx github:hapwi\/hapstack to update\./);
     assert.doesNotMatch(result.stdout, /"pluginId"|"installPath"|\x1b\[/);
     assert.equal(readFileSync(f.receipt, 'utf8'), before);
     assert.deepEqual(mutatingCalls(f.calls()), []);
@@ -174,7 +176,7 @@ test('status --yes updates only outdated installations; JSON stays read-only', (
     assert.deepEqual(mutatingCalls(f.calls()), []);
     const result = f.execute('status', '--yes');
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /updated 0\.3\.1 → /);
+    assert.match(result.stdout, /Claude Code\s+[\d.]+\s+Updated from 0\.3\.1/);
     assert.deepEqual([...new Set(mutatingCalls(f.calls()).map(call => call.agent))], ['claude']);
     assert.equal(JSON.parse(readFileSync(f.receipt)).agents['claude-code'].version, latest);
   } finally { rmSync(f.root, { recursive: true, force: true }); }
@@ -187,7 +189,7 @@ test('noninteractive updates require --yes and leave state untouched when skippe
     const result = f.execute('install', '--agent', 'codex');
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stdout, /--yes/);
-    assert.match(result.stdout, /skipped.*0\.3\.1/);
+    assert.match(result.stdout, /Codex\s+0\.3\.1\s+Skipped/);
     assert.deepEqual(mutatingCalls(f.calls()), []);
     assert.equal(readFileSync(f.receipt, 'utf8'), before);
   } finally { rmSync(f.root, { recursive: true, force: true }); }
@@ -198,7 +200,7 @@ test('--yes updates selected hosts and records their actual versions', () => {
   try {
     const result = f.execute('install', '--yes');
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /updated 0\.3\.1 → /);
+    assert.match(result.stdout, /Codex\s+[\d.]+\s+Updated from 0\.3\.1/);
     assert.doesNotMatch(result.stdout, /Verbose host log/);
     const record = JSON.parse(readFileSync(f.receipt));
     assert.equal(record.agents.codex.version, f.latest);
@@ -213,7 +215,7 @@ test('already-current installs make no host mutations', () => {
   try {
     const result = f.execute('install', '--agent', 'codex');
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /up to date/);
+    assert.match(result.stdout, /Codex\s+[\d.]+\s+Up to date/);
     assert.deepEqual(mutatingCalls(f.calls()), []);
   } finally { rmSync(f.root, { recursive: true, force: true }); }
 });
@@ -225,8 +227,8 @@ test('uncheckable sources stay unknown and require consent', () => {
       cwd: f.root, encoding: 'utf8', env: { ...process.env, PATH: join(f.root, 'bin') + ':' + process.env.PATH, XDG_STATE_HOME: join(f.root, 'state'), HAPSTACK_TEST_ROOT: f.root },
     });
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /update unknown/);
-    assert.doesNotMatch(result.stdout, /up to date/);
+    assert.match(result.stdout, /Update unknown/);
+    assert.doesNotMatch(result.stdout, /up to date/i);
     assert.deepEqual(mutatingCalls(f.calls()), []);
   } finally { rmSync(f.root, { recursive: true, force: true }); }
 });

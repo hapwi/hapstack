@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 import { readFileSync } from 'node:fs';
 import { launch, refreshShortCommand } from './launcher.mjs';
+import { createUI } from './ui.mjs';
 
 const version = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
 const args = process.argv.slice(2);
@@ -12,6 +13,7 @@ try {
     await refreshShortCommand({ sha: result.sha });
   } else await import('./cli.mjs');
 } catch (error) {
-  console.error(`Hapstack CLI refresh failed: ${error.message}`);
+  const ui = createUI();
+  ui.error(error); ui.finish();
   process.exitCode = 1;
 }

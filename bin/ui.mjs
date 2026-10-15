@@ -1,87 +1,120 @@
 import { createInterface } from 'node:readline';
 
-const colors = { brand: 36, good: 32, warn: 33, bad: 31, dim: 2, bold: 1, update: 33 };
-const icons = { good: '✓', warn: '!', bad: '✗', dim: '·', update: '↑' };
+const tones = { brand: [36, '◆'], good: [32, '✓'], update: [33, '↑'], warn: [33, '!'], bad: [31, '✗'], dim: [2, '·'], bold: [1] };
+const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+const visible = text => text.replace(/\x1b\[[\d;?]*[A-Za-z]/g, '').length;
 
+// Output is a sequence of blocks (header, inspected rows, outcomes, summary, error, help sections) separated by one blank line.
 export function createUI({ verbose = false, json = false, output = process.stdout, progress = process.stderr, input = process.stdin, env = process.env } = {}) {
-  const color = stream => env.NO_COLOR === undefined && env.TERM !== 'dumb' && (stream.isTTY || Boolean(env.FORCE_COLOR && env.FORCE_COLOR !== '0'));
-  const paint = (value, tone, stream = output) => color(stream) ? `\x1b[${colors[tone] || 33}m${value}\x1b[0m` : value;
-  const line = text => { if (!json) output.write(text + '\n'); };
-  let timer, statusVersion, pendingHeader = false;
-  const wide = () => (output.columns || 80) >= 76;
-  const statusHeader = () => {
-    pendingHeader = false;
-    line(`\n  ${paint('◆', 'brand')} ${paint('Hapstack', 'bold')}  ${paint('v' + statusVersion, 'dim')}`);
-    line(`    ${paint('Installation status', 'dim')}\n`);
-  };
+  const colorful = stream => env.NO_COLOR === undefined && env.TERM !== 'dumb' && (stream.isTTY || Boolean(env.FORCE_COLOR && env.FORCE_COLOR !== '0'));
+  const paint = (text, tone, stream = output) => tone && text && colorful(stream) ? `\x1b[${tones[tone][0]}m${text}\x1b[0m` : text;
+  const icon = (tone, stream) => paint(tones[tone][1], tone, stream);
+  const code = (text, tone, stream) => text.split('`').map((part, i) => paint(part, i % 2 ? 'brand' : tone, stream)).join('');
+  const animated = !json && !verbose && env.TERM !== 'dumb' && Boolean(output.isTTY && progress.isTTY);
+  const canPrompt = !json && Boolean(input.isTTY && progress.isTTY);
+  let title, spinner, last, lastStream = output;
+  const attached = () => last && last !== 'header' ? last : 'rows';
+
+  const heading = stream => `${paint('Hapstack', 'bold', stream)} ${paint(title.version, 'dim', stream)}${title.command ? ` ${paint('·', 'dim', stream)} ${title.command}` : ''}`;
   const stop = () => {
-    if (timer) {
-      clearInterval(timer); timer = undefined;
-      progress.write('\r\x1b[2K\x1b[?25h');
-    }
-    if (pendingHeader) statusHeader();
+    if (!spinner) return;
+    clearInterval(spinner); spinner = undefined;
+    progress.write('\r\x1b[2K\x1b[?25h');
   };
+  const gap = (kind, stream) => {
+    if (last !== kind) stream.write('\n');
+    last = kind; lastStream = stream;
+  };
+  const flush = () => {
+    if (!title) return;
+    if (title.opened) { last = 'header'; lastStream = output; } else gap('header', output);
+    output.write(`  ${icon('brand')} ${heading(output)}\n`);
+    title = undefined;
+  };
+  const emit = (kind, text, stream = output) => {
+    if (json) return;
+    stop(); flush(); gap(kind, stream);
+    stream.write(text + '\n');
+  };
+  const row = (label, version, message, tone, kind = 'rows') => {
+    const lead = `  ${icon(tone)} ${paint(label, 'bold')}${' '.repeat(Math.max(1, 13 - label.length))}`;
+    const body = paint(message, ['good', 'dim'].includes(tone) ? 'dim' : tone);
+    const columns = output.columns || 80;
+    const wide = visible(`${lead}${(version || '').padEnd(8)} ${message}`) <= columns;
+    if (wide) return emit(kind, `${lead}${(version || '').padEnd(8)} ${body}`);
+    emit(kind, `${lead}${version || ''}`.trimEnd());
+    emit(kind, `    ${body}`);
+  };
+
   return {
-    line, stop,
-    get interactive() { return !json && Boolean(input.isTTY && output.isTTY && progress.isTTY); },
-    header(version, { status = false } = {}) {
-      if (status) { statusVersion = version; pendingHeader = !json; }
-      else line(`\n${paint('◆ Hapstack', 'brand')} ${paint(version, 'dim')}\n`);
+    stop,
+    get interactive() { return canPrompt && Boolean(output.isTTY); },
+    canPrompt,
+    header(version, command) { if (!json) title = { version, command }; },
+    provider: row,
+    outcome(label, version, message, tone) { row(label, version, message, tone, 'outcomes'); },
+    note(text, tone = 'dim') { emit(attached(), `  ${icon(tone)} ${code(text, tone === 'dim' ? 'dim' : undefined)}`); },
+    sub(text) { emit(attached(), `    ${paint(text, 'dim')}`); },
+    detail(text) { if (verbose) this.sub(text); },
+    summary(text, tone = 'good', ...hints) {
+      emit('summary', `  ${icon(tone)} ${paint(text, 'bold')}`);
+      for (const hint of hints) this.hint(hint);
     },
-    statusTable(versions) {
-      stop();
-      line(`    ${paint('Latest release', 'dim')}  ${paint(versions.join(', ') || 'Unknown', versions.length ? 'brand' : 'warn')}\n`);
-      if (wide()) line(paint(`    ${'Provider'.padEnd(15)}${'Version'.padEnd(12)}${'State'.padEnd(11)}Updates`, 'dim'));
-      line(paint('  ' + '─'.repeat(Math.max(16, Math.min(72, (output.columns || 80) - 4))), 'dim'));
+    hint(text) { emit('summary', `    ${code(text, 'dim')}`); },
+    table(heading_, rows) {
+      emit(heading_, `  ${paint(heading_, 'bold')}`);
+      const width = Math.max(...rows.map(([name, text]) => text === undefined ? 0 : name.length));
+      for (const [name, text] of rows) emit(heading_, text === undefined ? `    ${code(name)}` : `    ${paint(name.padEnd(width), 'brand')}  ${text}`);
     },
-    statusRow(label, { version, enabled, message, tone }) {
-      stop();
-      const state = enabled === true ? 'Enabled' : enabled === false ? 'Disabled' : '—';
-      const lead = `  ${paint(icons[tone] || icons.warn, tone)} ${paint(label.padEnd(13), 'bold')}`;
-      if (wide()) line(`${lead}  ${paint((version || '—').padEnd(10), 'bold')}  ${paint(state.padEnd(9), enabled === false ? 'warn' : 'dim')}  ${paint(message, tone)}`);
-      else {
-        line(`${lead} ${paint(version || '—', 'bold')}`);
-        line(`    ${paint(state, enabled === false ? 'warn' : 'dim')} · ${paint(message, tone)}`);
-      }
-    },
-    summary(text, tone = 'good') { line(`\n  ${paint(icons[tone] || icons.warn, tone)} ${paint(text, tone)}`); },
-    row(label, text, tone = 'good') { stop(); line(`  ${paint(icons[tone] || icons.warn, tone)} ${label.padEnd(13)} ${text}`); },
-    detail(text) { if (verbose) line(`  ${paint(text, 'dim')}`); },
     async task(label, action) {
-      const animate = output.isTTY && progress.isTTY && env.TERM !== 'dumb' && !verbose && !json;
-      if (animate) {
-        const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
-        let frame = 0;
-        progress.write('\x1b[?25l');
-        const heading = pendingHeader;
-        if (heading) output.write('\n');
-        const draw = () => {
-          const text = heading ? `${paint('Hapstack', 'bold', progress)}  ${paint('v' + statusVersion, 'dim', progress)}  ${paint('Checking…', 'dim', progress)}` : label;
-          progress.write(`\r\x1b[2K  ${paint(frames[frame++ % frames.length], 'brand', progress)} ${text}`);
-        };
-        draw(); timer = setInterval(draw, 80);
-      } else if (!json) { stop(); if (verbose || !statusVersion) line(`  ${paint('·', 'dim')} ${label}`); }
-      try { return await action(); } finally { stop(); }
+      if (json) return action();
+      const onHeader = Boolean(title);
+      if (!animated) {
+        if (verbose) emit('outcomes', `  ${icon('dim')} ${label}`);
+        else flush();
+        try { return await action(); } finally { flush(); }
+      }
+      stop();
+      if (onHeader) { gap('header', progress); title.opened = true; } else { flush(); gap('outcomes', progress); }
+      let frame = 0;
+      const draw = () => {
+        const width = Math.max(1, (progress.columns || output.columns || 80) - 5);
+        let text = onHeader ? `${heading(progress)}  ${paint(label, 'dim', progress)}` : label;
+        if (visible(text) > width && onHeader) text = heading(progress);
+        if (visible(text) > width) {
+          const plain = onHeader ? 'Hapstack' : label;
+          text = paint(plain.length <= width ? plain : plain.slice(0, width - 1) + '…', onHeader ? 'bold' : 'dim', progress);
+        }
+        progress.write(`\r\x1b[2K  ${paint(frames[frame++ % frames.length], 'brand', progress)} ${text}`);
+      };
+      progress.write('\x1b[?25l'); draw();
+      spinner = setInterval(draw, 80);
+      try { return await action(); } finally { stop(); if (onHeader) flush(); }
     },
     async confirm(question) {
-      stop();
-      if (!input.isTTY || !progress.isTTY) {
-        line('\n  Updates were skipped. Run again with --yes to update unattended.');
-        return false;
-      }
+      stop(); flush();
+      if (!canPrompt) return false;
+      gap('summary', progress);
       const rl = createInterface({ input, output: progress });
       return new Promise(resolve => {
-        rl.once('SIGINT', () => { process.exitCode = 130; rl.close(); });
+        rl.once('SIGINT', () => { process.exitCode = 130; progress.write('\n'); rl.close(); });
         rl.once('close', () => resolve(false));
-        rl.question(`\n${paint('?', 'warn', progress)} ${question} [y/N] `, answer => {
+        rl.question(`  ${paint('?', 'brand', progress)} ${question} ${paint('[y/N]', 'dim', progress)} `, answer => {
           resolve(/^y(?:es)?$/i.test(answer.trim())); rl.close();
         });
       });
     },
     error(error) {
+      stop(); flush();
+      const [message, ...rest] = (error instanceof Error ? error.message : String(error)).split('\n');
+      gap('error', progress);
+      progress.write(`  ${icon('bad', progress)} ${paint(message, 'bold', progress)}\n`);
+      for (const text of rest) progress.write(`    ${paint(text.trim(), 'dim', progress)}\n`);
+      if (error?.hint) progress.write(`    ${code(error.hint, 'dim', progress)}\n`);
+    },
+    finish() {
       stop();
-      const message = error instanceof Error ? error.message : String(error);
-      progress.write(`\n  ${paint('✗', 'bad', progress)} ${message}\n`);
+      if (last) { lastStream.write('\n'); last = undefined; }
     },
   };
 }

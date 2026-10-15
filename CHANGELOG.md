@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.4 - 2026-10-15
+
+- Unify install, status, updates, removal, help, and errors around compact provider rows, consistent spacing, and clear next actions.
+- Let active spinners settle into result lines, keep progress within narrow terminals, and reserve color for actions and findings that need attention.
+- Preserve conservative update prompts and read-only JSON, hide receipt mismatches behind verbose output, and clearly report managed links kept during partial removal.
+
 ## 0.4.3 - 2026-10-15
 
 - Redesign status with an animated header, aligned provider columns, terminal colors, and a compact layout for narrow terminals.

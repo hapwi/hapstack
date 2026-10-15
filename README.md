@@ -22,20 +22,20 @@ If Bun cached an installer from before 0.4.1, refresh that short-command entry o
 bunx "github:hapwi/hapstack#$(git ls-remote https://github.com/hapwi/hapstack.git HEAD | cut -f1)" refresh-cli
 ~~~
 
-This refreshes only the owned Bun cache entry whose sole dependency is the unqualified Hapstack GitHub source. It does not clear other packages or install plugins. Targeted cache migration requires a platform that reports the current user's file ownership. After the refresh, use `bunx github:hapwi/hapstack` and `bunx github:hapwi/hapstack status` normally. On other platforms, use the commit-pinned command until Bun refreshes its old cache. The current help starts with `Hapstack 0.4.3`.
+This refreshes only the owned Bun cache entry whose sole dependency is the unqualified Hapstack GitHub source. It does not clear other packages or install plugins. Targeted cache migration requires a platform that reports the current user's file ownership. After the refresh, use `bunx github:hapwi/hapstack` and `bunx github:hapwi/hapstack status` normally. On other platforms, use the commit-pinned command until Bun refreshes its old cache. The current help header shows `Hapstack 0.4.4`.
 
 This installs Hapstack as **one native plugin per provider**, using the Codex and Claude Code plugin managers. Both selected providers need a plugin-capable CLI. It does not copy the bundled skills into your standalone skill folders or replace your personal patcher/ship. Each host owns the plugin cache, namespace, and enabled state. No Hapstack npm publication or MCP server is required.
 
 Use `--agent codex` or `--agent claude-code` to select one provider. `--list` lists bundled skills without installing. `--help` shows options.
 
-The installer shows concise provider results with colors and animated progress in supported terminals. It compares actual host versions with the selected source and asks once before updating existing installations. The default answer is No. Use `--yes` to approve updates unattended; redirected input skips updates without that flag. Fresh installations still run when requested. Existing skill links also require confirmation before being refreshed.
+The installer shows one aligned row per provider, first its current state and then what changed, with colors and a spinner in supported terminals. It compares actual host versions with the selected source and asks once before updating existing installations. The default answer is No. Use `--yes` to approve updates unattended; redirected input skips updates without that flag. Fresh installations still run when requested. Existing skill links also require confirmation before being refreshed.
 
 ~~~bash
 bunx github:hapwi/hapstack status
 bunx github:hapwi/hapstack uninstall
 ~~~
 
-Status shows a live checking indicator followed by provider versions, enabled state, and update availability. Outdated installations offer an interactive **Update now? [y/N]** prompt; declining leaves installations and the private record unchanged. Use `status --yes` to approve updates unattended. Redirected status output stays read-only without `--yes`; `status --json` is always read-only. GitHub checks resolve the source to an exact commit before reading its version; local sources use their manifest. Offline or unsupported sources show "update unknown". If the installer itself is older than the source, fetch a fresh installer before updating skill links.
+Status shows a checking spinner beside the Hapstack header, then each provider's host-reported version and whether it is up to date, out of date, or disabled. Outdated installations offer an interactive **Update now? [y/N]** prompt; declining leaves installations and the private record unchanged and prints the `bunx github:hapwi/hapstack` command for updating later. Use `status --yes` to approve updates unattended. Redirected status output stays read-only without `--yes`; `status --json` is always read-only. GitHub checks resolve the source to an exact commit before reading its version; local sources use their manifest. Offline or unsupported sources show "Update unknown". If the installer itself is older than the source, fetch a fresh installer before updating skill links.
 
 Use `status --json` for machine-readable results and `--verbose` for host logs and diagnostic paths. Colors are disabled for redirected output, `TERM=dumb`, or `NO_COLOR`. Uninstall delegates to the native plugin manager. Settings, backups, and marketplace registrations remain; remove a registration separately only when you no longer want it as an install source.
 

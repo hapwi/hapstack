@@ -3,10 +3,12 @@ import { lstatSync, readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { compareVersions } from './version.mjs';
+import { createUI } from './ui.mjs';
 
 const repository = 'github:hapwi/hapstack';
 const bun = process.versions.bun ? process.execPath : 'bun';
-const warn = message => process.stderr.write(`  ! ${message}\n`);
+const notes = createUI({ output: process.stderr });
+const warn = (message, tone = 'warn') => notes.note(message, tone);
 
 export async function runBun(args, options = {}) {
   return new Promise((resolve, reject) => {
@@ -42,7 +44,7 @@ export async function launch({ version, args, env = process.env, fetch_ = fetch,
     if (metadata.name !== 'hapstack' || compareVersions(metadata.version, metadata.version) !== 0) throw new Error('The source has no valid Hapstack CLI version');
     latest = metadata.version;
   } catch (error) {
-    report(`CLI update check unavailable. Using cached ${version}. ${error.message}`);
+    report(`Using cached ${version}; couldn't check for a newer CLI (${error.message}).`);
     return { kind: 'unavailable' };
   }
   if (args[0] === 'refresh-cli' && compareVersions(latest, version) < 0) {
@@ -50,7 +52,7 @@ export async function launch({ version, args, env = process.env, fetch_ = fetch,
   }
   if (compareVersions(latest, version) <= 0) return { kind: 'local', sha };
 
-  report(`Loading Hapstack CLI ${latest}…`);
+  report(`Loading Hapstack ${latest}…`, 'dim');
   const code = await run(['x', '--silent', `${repository}#${sha}`, ...args], {
     env: { ...env, HAPSTACK_CLI_EXPECTED_VERSION: latest, HAPSTACK_CLI_COMMIT: sha },
     stdio: 'inherit',
@@ -78,11 +80,11 @@ export async function refreshShortCommand({ sha, directory = process.env.BUN_TMP
     if (['devDependencies', 'optionalDependencies', 'peerDependencies', 'workspaces'].some(key => metadata[key] && Object.keys(metadata[key]).length)) continue;
     const modules = join(root, 'node_modules');
     if (existsSync(modules) && (!lstatSync(modules).isDirectory() || lstatSync(modules).isSymbolicLink())) continue;
-    report('Refreshing the Hapstack short-command cache…');
+    report('Refreshing the Hapstack short-command cache…', 'dim');
     const code = await run(['add', `hapstack@${repository}#${sha}`, '--force', '--no-cache', '--silent', '--ignore-scripts'], { cwd: root, stdio: 'inherit' });
     if (code !== 0) throw new Error(`Bun could not refresh the Hapstack CLI cache (exit ${code}).`);
     refreshed++;
   }
-  report(refreshed ? 'Short command refreshed. Use bunx github:hapwi/hapstack normally.' : 'No legacy Hapstack short-command cache needs refreshing.');
+  report(refreshed ? 'Short command refreshed. Use `bunx github:hapwi/hapstack` normally.' : 'No cached Hapstack short command needs refreshing.', refreshed ? 'good' : 'dim');
   return refreshed;
 }
