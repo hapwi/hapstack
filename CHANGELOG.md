@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.2 - 2026-10-15
+
+- Refresh Patcher guidance against React Doctor 0.9.18 while continuing to run `react-doctor@latest`.
+- Replace deprecated diff examples with explicit scan scopes and clarify partial results, optional project-graph coverage, and runtime compatibility.
+- Document default supply-chain network checks separately from telemetry controls and preserve explicit setup and dependency-upgrade authorization.
+
 ## 0.4.1 - 2026-10-14
 
 - Add a stable launcher that refreshes a stale CLI through an exact source commit while preserving arguments, terminal prompts, and exit status.

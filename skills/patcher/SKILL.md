@@ -5,7 +5,7 @@ description: Run React Doctor and configured shadcn lint diagnostics, with an op
   invokes patcher or patcher improve, asks for React Doctor review or fixes, or requests
   a React Doctor score such as 100/100.
 metadata:
-  version: 0.3.2
+  version: 0.3.3
   short-description: Diagnose and fix React and design-system findings
 license: MIT
 ---
@@ -75,7 +75,7 @@ Inspect dependencies, plugin registration, effective rules and overrides, lint f
 
 For missing or incomplete setup, offer a concise choice: **base install only**, **guided rule setup**, or **keep current setup and continue patcher**. For a base install already present, offer rule setup or continuing as-is. Combine this with other missing-tooling questions rather than asking twice. Reuse prior choices, including “base install for now”; do not prompt again during the same workflow. Continue available diagnostics regardless of whether optional setup is declined.
 
-Before authorized installation, read the current [official setup guide](https://github.com/shadcn-ui/lint/blob/main/SETUP.md) and [requirements/configuration](https://github.com/shadcn-ui/lint#readme). Check Tailwind v4, Node.js, and linter compatibility, including Vite+'s bundled Oxlint when applicable. Requirements checked on 2026-09-15: Node.js 20.19+, Oxlint 1.80+ or ESLint 9.30+; verify current requirements when installing latest packages. Bun as package manager does not replace this compatibility check.
+Before authorized installation, read the current [official setup guide](https://github.com/shadcn-ui/lint/blob/main/SETUP.md) and [requirements/configuration](https://github.com/shadcn-ui/lint#readme). Check Tailwind v4, Node.js, and linter compatibility, including Vite+'s bundled Oxlint when applicable. Requirements checked on 2026-10-14: Node.js 20.19+, Oxlint 1.80+ or ESLint 9.30+; verify current requirements when installing latest packages. Check Vite+'s own Node.js requirements separately when its setup is selected. Bun as package manager does not replace this compatibility check.
 
 **Base install:** install the latest compatible `@shadcn/lint` and register it with the existing linter that checks UI files. Preserve ESLint when that is the existing choice; if both linters exist, avoid duplicate registration. If neither exists, propose Oxlint. Use the package owning the lint config, its package manager, and existing workspace conventions. Preserve parsers, scripts, rules, and ignores. Do not enable presets, new rules, or policy overrides. Resolve only necessary component/theme discovery settings from `components.json`, aliases, exports, and source; custom Tailwind components are supported too. Run the relevant lint command to verify configuration loading, separating setup errors from existing findings. Report “base install complete; no new rules enabled,” show where rules belong, and resume patcher with available coverage.
 
@@ -84,20 +84,20 @@ Before authorized installation, read the current [official setup guide](https://
 ## Diagnose
 
 1. Confirm React source or dependencies and select the app root or supported `--project <name>` in a monorepo. Skip established non-React projects with an explanation.
-2. Select the package runner from the existing setup. Examples below use `vp dlx` for Vite+; use `bunx` for Bun without Vite+, or the existing npm/pnpm/Yarn equivalent elsewhere. Keep `react-doctor@latest`; report the resolved version when available and check current help if reference flags differ.
+2. Select the package runner from the existing setup. Examples below use `vp dlx` for Vite+; use `bunx` for Bun without Vite+, or the existing npm/pnpm/Yarn equivalent elsewhere. Keep `react-doctor@latest`; it is not pinned to this skill's metadata version. Report the resolved version and check current help if reference flags differ. React Doctor 0.9.18 requires Node.js `^20.19.0 || >=22.13.0`; check the resolved release's requirements before running it.
 3. Run a full diagnostic inventory unless the user requested changed-file scope:
 
 ```bash
-vp dlx react-doctor@latest <project-dir> --json --blocking none --diff false
+vp dlx react-doctor@latest <project-dir> --json --blocking none --scope full
 ```
 
-For a readable report, replace `--json` with `--verbose`. For changed files, replace `--diff false` with `--diff <base>` or `--staged`; never combine `--diff` and `--staged`.
+For a readable report, replace `--json` with `--verbose`. To report all findings in changed files, use `--scope files --base <ref>`; for newly introduced findings only, use `--scope changed --base <ref>`. For staged files, replace `--scope full` with `--staged`. Use partial scopes only when requested; they do not establish a full-project score.
 
-4. Parse JSON after package-manager progress text. Report the actual score, scope, and error/warning counts. A successful exit with `--blocking none` does not mean there are no findings.
+4. Parse JSON after package-manager progress text. Report the actual score, scope, and error/warning counts. Inspect `ok: false`, failed checks, and partial results; a time-limited scan or skipped files/projects cannot establish a complete inventory or verified full-project 100. A successful exit with `--blocking none` does not mean there are no findings. Optional project-graph rules run only when explicitly configured and only in full scans; do not claim unused-code coverage from defaults alone.
 5. Run the configured lint command in the requested scope. For Vite+, inspect `lint.jsPlugins`, `lint.rules`, and `lint.overrides` in `vite.config.*` and use `vp lint`; elsewhere inspect the existing linter configuration and scripts. For applicable Tailwind v4 projects, classify `@shadcn/lint` setup as above and report enabled-rule findings separately from React Doctor. Missing coverage follows the setup choice above and does not prevent other diagnostics.
 6. For diagnostics or review only, stop after the report. For fixes or a target score, continue below.
 
-Use `--no-score` or `--no-telemetry` when the score service should not be contacted; explain that a numeric score and share URL will be unavailable. Fetching `@latest` may itself require network access.
+Use `--no-score` or `--no-telemetry` when the score service should not be contacted; explain that a numeric score and share URL will be unavailable. These flags do not disable the default Socket.dev dependency checks; use `--no-supply-chain` too when those network requests must be avoided, and report the omitted coverage. Fetching `@latest` may itself require network access. Dependency findings are findings to report; they do not authorize package upgrades.
 
 ## Fix and verify
 
@@ -110,10 +110,10 @@ Use `--no-score` or `--no-telemetry` when the score service should not be contac
 A score-only confirmation is available when a full finding inventory has already been reviewed:
 
 ```bash
-vp dlx react-doctor@latest <project-dir> --score --blocking none --diff false
+vp dlx react-doctor@latest <project-dir> --score --blocking none --scope full
 ```
 
-Do not run `install` or `setup` unless the user asks to install React Doctor guidance into the project.
+Do not run `install` or `setup` unless the user asks to install React Doctor guidance into the project; these commands can also install hooks. CI installation or configuration requires its own explicit request. Patcher Improve remains the audit defined in `references/improve.md`; React Doctor's separate `design` and runtime `scan` commands are not selected automatically.
 
 ## Report
 
