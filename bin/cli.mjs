@@ -7,6 +7,7 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { createUI } from './ui.mjs';
 import { compareVersions } from './version.mjs';
+import { checkLatestVersion } from './source.mjs';
 
 let ui = createUI();
 async function main() {
@@ -70,7 +71,7 @@ if (!['install', 'status', 'uninstall', 'migrate'].includes(command)) fail(`Unkn
 if (json && command !== 'status') fail('--json is supported for status only.');
 ui = createUI({ verbose, json });
 if (list) { console.log(names.join('\n')); return; }
-ui.header(version);
+ui.header(version, { status: command === 'status' });
 const base = project ? process.cwd() : homedir();
 const state = project ? join(base, '.agents', 'hapstack') : join(process.env.XDG_STATE_HOME || join(homedir(), '.local', 'state'), 'hapstack');
 const data = project ? state : join(process.env.XDG_DATA_HOME || join(homedir(), '.local', 'share'), 'hapstack');
@@ -124,21 +125,7 @@ async function nativeInventory(agent) {
 const sourceChecks = new Map();
 async function latestVersion(source_) {
   if (sourceChecks.has(source_)) return sourceChecks.get(source_);
-  const check = (async () => {
-    try {
-      let manifest;
-      if (existsSync(source_)) manifest = JSON.parse(readFileSync(join(source_, 'plugin.json'), 'utf8'));
-      else {
-        const github = /^(?:https:\/\/github\.com\/)?([\w.-]+)\/([\w.-]+?)(?:\.git)?(?:#([^\s]+))?\/?$/.exec(source_);
-        if (!github) return { version: null, error: 'update check is unavailable for this source' };
-        const response = await fetch(`https://raw.githubusercontent.com/${github[1]}/${github[2]}/${encodeURIComponent(github[3] || 'HEAD')}/plugin.json`, { signal: AbortSignal.timeout(5000) });
-        if (!response.ok) throw new Error(`source returned HTTP ${response.status}`);
-        manifest = await response.json();
-      }
-      if (manifest.name !== 'hapstack' || compareVersions(manifest.version, manifest.version) !== 0) throw new Error('source has no valid Hapstack version');
-      return { version: manifest.version, error: null };
-    } catch (error) { return { version: null, error: `couldn't check updates: ${error.message}` }; }
-  })();
+  const check = checkLatestVersion(source_);
   sourceChecks.set(source_, check);
   return check;
 }
@@ -163,7 +150,7 @@ async function inspect(agent) {
   const state_ = error ? 'error' : !installed ? record ? 'missing' : 'fresh' : comparison === undefined ? 'unknown' : comparison < 0 ? 'update' : comparison > 0 ? 'ahead' : 'current';
   return { agent, strategy, source: source_, latest, managed: Boolean(record), recorded: record?.version || null, installed, enabled, state: state_, error, instances, links };
 }
-function show(row, action) {
+function show(row, action, statusView = false) {
   let text = action || (!row.installed ? row.state === 'missing' ? 'recorded, but no longer installed' : 'not installed' : `${row.installed}  ${row.enabled === true ? 'enabled · ' : row.enabled === false ? 'disabled · ' : ''}${{ current: 'up to date', update: `update available → ${row.latest.version}`, ahead: 'ahead of source', unknown: 'update unknown' }[row.state] || ''}`);
   let tone = row.state === 'error' ? 'bad' : row.state === 'update' ? 'update' : row.state === 'unknown' || row.state === 'missing' || row.enabled === false ? 'warn' : row.installed ? 'good' : 'dim';
   if (row.error) text = row.error.split('\n')[0];
@@ -172,19 +159,27 @@ function show(row, action) {
     text += ` · ${row.links.length} skill links${changed ? ` · ${changed} missing or changed` : ''}`;
     if (changed) tone = 'warn';
   }
-  ui.row(label(row.agent), text, tone);
-  if (row.recorded && row.installed && row.recorded !== row.installed) ui.row('', `record says ${row.recorded}; host reports ${row.installed}`, 'warn');
+  if (statusView) {
+    const message = row.error ? 'Check failed' : !row.installed ? row.state === 'missing' ? 'Installation missing' : 'Not installed' : { current: 'Up to date', update: `Out of date → ${row.latest.version}`, ahead: 'Newer than source', unknown: 'Update unknown' }[row.state];
+    ui.statusRow(label(row.agent), { version: row.installed, enabled: row.enabled, message, tone });
+    if (row.strategy === 'links' && row.installed) ui.line(`    ${row.links.length} skill links${row.links.some(entry => !entry.owned) ? ' · some missing or changed' : ''}`);
+  } else ui.row(label(row.agent), text, tone);
+  if (row.recorded && row.installed && row.recorded !== row.installed) ui.detail(`Record says ${row.recorded}; ${label(row.agent)} reports ${row.installed}.`);
   if (row.installed && !row.managed) ui.detail('Found on the host; not recorded by this installer.');
-  if (row.error) ui.detail(row.error);
+  if (row.error) statusView ? ui.line(`    ${row.error.split('\n')[0]}`) : ui.detail(row.error);
+  if (statusView && row.latest.error) ui.detail(row.latest.error);
   ui.detail(`Source: ${row.source}`);
   for (const entry of row.links) ui.detail(`${entry.path} [${entry.owned ? 'owned' : 'missing or changed'}]`);
 }
 async function inspectSelected() {
   const rows = await ui.task('Checking installations and available updates…', () => Promise.all(selected.map(inspect)));
   const versions = [...new Set(rows.map(row => row.latest.version).filter(Boolean))];
-  if (versions.length) ui.line(`  Latest ${versions.join(', ')}\n`);
-  for (const row of rows) if (row.latest.error) ui.row(label(row.agent), `${row.latest.error} · update unknown`, 'warn');
-  if (versions.some(value => compareVersions(version, value) < 0)) ui.line(`  This installer is ${version}. Fetch the latest with bunx github:hapwi/hapstack#main.\n`);
+  if (command === 'status') ui.statusTable(versions);
+  else {
+    if (versions.length) ui.line(`  Latest ${versions.join(', ')}\n`);
+    for (const row of rows) if (row.latest.error) ui.row(label(row.agent), `${row.latest.error} · update unknown`, 'warn');
+    if (versions.some(value => compareVersions(version, value) < 0)) ui.line(`  This installer is ${version}. Fetch the latest with bunx github:hapwi/hapstack#main.\n`);
+  }
   return rows;
 }
 function hashTree(path) {
@@ -245,23 +240,25 @@ function cleanupPackages() {
     receipt.packages = receipt.packages.filter(candidate => candidate !== pkg);
   }
 }
-async function install() {
-  for (const agent of selected) {
-    const strategy = skills || project || agent === 'cursor' ? 'links' : 'native';
+async function install({ inspected, approvedUpdates = false } = {}) {
+  const agents = inspected ? inspected.map(row => row.agent) : selected;
+  const strategyFor = agent => inspected?.find(row => row.agent === agent)?.strategy || (skills || project || agent === 'cursor' ? 'links' : 'native');
+  for (const agent of agents) {
+    const strategy = strategyFor(agent);
     if (receipt.agents[agent] && receipt.agents[agent].strategy !== strategy) fail(`Uninstall ${agent}'s current Hapstack installation before changing its installation strategy.`);
     if (strategy === 'native' && !await nativeAvailable(agent)) fail(`${agent} needs a plugin-capable CLI. Use --skills for tracked skill links; no provider upgrade was attempted.`);
   }
-  const rows = await inspectSelected();
-  rows.forEach(row => show(row));
+  const rows = inspected || await inspectSelected();
+  if (!inspected) rows.forEach(row => show(row));
   for (const row of rows) if (row.error) fail(`${label(row.agent)}: ${row.error}`);
   const pending = rows.filter(row => row.installed && (row.state === 'update' || row.state === 'unknown' || row.strategy === 'links' && (compareVersions(row.installed, version) !== 0 || row.links.some(entry => !entry.owned))));
   const targets = [...new Set(pending.map(row => row.latest.version))];
   const question = `Update ${pending.map(row => label(row.agent)).join(' and ')}${targets.length === 1 && targets[0] ? ' to ' + targets[0] : ''}?`;
-  const approved = !pending.length || yes || await ui.confirm(question);
+  const approved = !pending.length || approvedUpdates || yes || await ui.confirm(question);
   if (process.exitCode === 130) return;
   let bundle, changed = false;
-  for (const agent of selected) {
-    const strategy = skills || project || agent === 'cursor' ? 'links' : 'native';
+  for (const agent of agents) {
+    const strategy = strategyFor(agent);
     const row = rows.find(item => item.agent === agent);
     if (row.installed && pending.includes(row) && !approved) { ui.row(label(agent), `skipped · stays on ${row.installed}`, 'dim'); continue; }
     if (row.installed && !pending.includes(row)) continue;
@@ -346,9 +343,22 @@ async function status() {
     const providers = rows.map(({ agent, strategy, managed, recorded, installed, enabled, state: state_, error, source: source_, latest, links, instances }) => ({ agent, strategy, managed, recorded, installed, enabled, state: state_, error, source: verbose || !existsSync(source_) ? source_ : 'local', latest, links: links.map(entry => verbose ? entry : { owned: entry.owned }), instances: verbose ? instances : instances.map(({ version: value, scope, enabled: active }) => ({ version: value, scope, enabled: active })) }));
     console.log(JSON.stringify({ cli: version, providers, ...(verbose ? { receipt: receiptPath } : {}) }, null, 2));
   } else {
-    rows.forEach(row => show(row));
+    rows.forEach(row => show(row, undefined, true));
     ui.detail(`Installation record: ${receiptPath}${existsSync(receiptPath) ? '' : ' (none)'}`);
-    if (rows.some(row => row.state === 'update')) ui.line('\n  Run bunx github:hapwi/hapstack to choose updates.');
+    const outdated = rows.filter(row => row.state === 'update').length;
+    const olderCLI = rows.some(row => compareVersions(version, row.latest.version) < 0);
+    if (outdated || olderCLI) {
+      ui.summary(outdated ? `${outdated} installation${outdated === 1 ? '' : 's'} out of date.` : 'This CLI is out of date.', 'update');
+      ui.line('    Run bunx github:hapwi/hapstack to update to the latest version.');
+      if (outdated && (yes || ui.interactive && await ui.confirm('Update now?'))) {
+        await install({ inspected: rows.filter(row => row.state === 'update'), approvedUpdates: true });
+      }
+    } else if (rows.some(row => row.error || row.latest.error)) ui.summary('Some checks could not be completed. Try status again or use --verbose for details.', 'warn');
+    else if (rows.some(row => !row.installed)) {
+      ui.summary('Some providers do not have Hapstack installed.', 'dim');
+      ui.line('    Run bunx github:hapwi/hapstack to install.');
+    } else ui.summary(rows.some(row => row.state === 'ahead') ? 'Installed versions are newer than the selected source.' : 'All installed versions are up to date.', 'good');
+    ui.line('');
   }
   if (rows.some(row => row.error)) process.exitCode = 1;
 }

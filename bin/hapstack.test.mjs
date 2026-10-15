@@ -148,8 +148,9 @@ test('status reports host versions and updates without mutations or receipt writ
     const before = readFileSync(f.receipt, 'utf8');
     const result = f.execute('status');
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /Codex\s+0\.3\.1.*update available/);
-    assert.match(result.stdout, /Claude Code\s+0\.3\.1.*update available/);
+    assert.match(result.stdout, /Codex\s+0\.3\.1.*Out of date/);
+    assert.match(result.stdout, /Claude Code\s+0\.3\.1.*Out of date/);
+    assert.match(result.stdout, /Run bunx github:hapwi\/hapstack to update to the latest version/);
     assert.doesNotMatch(result.stdout, /"pluginId"|"installPath"|\x1b\[/);
     assert.equal(readFileSync(f.receipt, 'utf8'), before);
     assert.deepEqual(mutatingCalls(f.calls()), []);
@@ -158,6 +159,24 @@ test('status reports host versions and updates without mutations or receipt writ
     assert.equal(data.providers[0].state, 'update');
     assert.equal(data.providers[0].latest.version, f.latest);
     assert.doesNotMatch(json.stdout, new RegExp(f.root));
+  } finally { rmSync(f.root, { recursive: true, force: true }); }
+});
+
+test('status --yes updates only outdated installations; JSON stays read-only', () => {
+  const latest = JSON.parse(readFileSync(join(dirname(cli), '../plugin.json'))).version;
+  const f = nativeFixture({ versions: { codex: latest, claude: '0.3.1' } });
+  try {
+    const before = readFileSync(f.receipt, 'utf8');
+    const json = f.execute('status', '--json', '--yes');
+    assert.equal(json.status, 0, json.stderr);
+    assert.equal(JSON.parse(json.stdout).providers[1].state, 'update');
+    assert.equal(readFileSync(f.receipt, 'utf8'), before);
+    assert.deepEqual(mutatingCalls(f.calls()), []);
+    const result = f.execute('status', '--yes');
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /updated 0\.3\.1 → /);
+    assert.deepEqual([...new Set(mutatingCalls(f.calls()).map(call => call.agent))], ['claude']);
+    assert.equal(JSON.parse(readFileSync(f.receipt)).agents['claude-code'].version, latest);
   } finally { rmSync(f.root, { recursive: true, force: true }); }
 });
 

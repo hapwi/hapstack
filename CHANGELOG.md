@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.3 - 2026-10-15
+
+- Redesign status with an animated header, aligned provider columns, terminal colors, and a compact layout for narrow terminals.
+- Label outdated installations clearly and offer an interactive update prompt; update only outdated providers after approval, while keeping JSON status read-only.
+- Resolve GitHub version checks to exact commits to avoid stale release metadata, and show receipt mismatches only with verbose output.
+
 ## 0.4.2 - 2026-10-15
 
 - Refresh Patcher guidance against React Doctor 0.9.18 while continuing to run `react-doctor@latest`.
