@@ -1,9 +1,9 @@
 ---
 name: ship
-description: Ship PRs or scoped local work to the configured Git remote’s default
-  branch following the project’s versioning policy and updating an existing changelog.
-  Handle "release this" using the project’s existing release process, without assuming
-  tags or GitHub releases. Clean up safely merged PR branches; deployment is separate.
+description: Ship PRs or scoped local work with shared version and changelog tracking,
+  following the project’s release policy and optional nightly workflow. Handle
+  "release this", confirm the target version, and clean up safely merged PR branches.
+  Deployment is separate.
 metadata:
   version: 0.1.0
 license: MIT
@@ -11,9 +11,11 @@ license: MIT
 
 # Ship
 
-Ship the work identified by the user or current conversation using `git` and the selected host’s available review tools. Use `gh` only for GitHub repositories. In this skill, “PR” also includes a host’s equivalent merge request. “Ship this”, `$ship`, or a specified PR authorizes committing the scoped work, preparing its version when the applicable policy calls for it, updating its existing changelog, pushing, merging into the default branch, and safely cleaning up merged PR branches. “Main” means the repository's actual default branch. Do not ask for a second approval of these actions.
+Ship the work identified by the user or current conversation using `git` and the selected host’s available review tools. Use `gh` only for GitHub repositories. In this skill, “PR” also includes a host’s equivalent merge request. “Ship this”, `$ship`, or a specified PR authorizes committing the scoped work, preparing its version when the applicable policy calls for it, maintaining its changelog, pushing, merging into the default branch, and safely cleaning up merged PR branches. “Main” means the repository's actual default branch. Do not ask for a second approval of these actions. An unresolved version choice is a product decision, not another shipping approval.
 
-“Release this” uses the same version-and-delivery workflow and follows the project’s existing release process. Neither phrase by itself introduces tags or GitHub releases. Create or publish those only when explicitly requested or required by the established project release workflow; a historical tag alone does not establish that requirement. A project that tracks releases solely in its manifest and changelog continues doing so. Neither mode authorizes deployment commands, package-registry publishing, or notification messages. Existing repository automation may run after a push or merge; honor active constraints on its consequences.
+“Release this” uses the same version-and-delivery workflow and follows the project’s existing release process. Neither phrase by itself introduces tags or GitHub releases. Create or publish those only when explicitly requested or required by the established project release workflow; a historical tag alone does not establish that requirement. A project that tracks releases solely in its manifest and changelog continues doing so. Neither phrase authorizes deployment commands, package-registry publishing, or notification messages. Existing repository automation may run after a push or merge; honor active constraints on its consequences.
+
+Use one shared flow for version tracking and a changelog. Optional nightly support adds candidate publication and stable promotion to that flow. A plain development commit, push, or build is not a release and does not trigger release-version questions or stable bumps.
 
 Editing this skill alone does not authorize shipping or releasing the current repository. Apply explicit user overrides, such as shipping without a version bump. Follow the project's versioning policy and configured release tooling. Read the optional bundled setup configuration as described below; a configured preference never bypasses a concrete repository approval gate.
 
@@ -23,7 +25,9 @@ Read [the runtime contract](../hap-mode/references/runtime.md) for host features
 
 Read [configuration](../setup-hapstack/references/configuration.md) when that bundled file is available. Resolve the project configuration before global configuration. When no configuration exists, use the project’s existing version/release policy, merge convention, and tools; do not apply another user’s preferences. If this skill was installed alone, these defaults are sufficient.
 
-Version preparation follows the selected policy: `project` uses the repository convention; `bump-on-ship` prepares a version for each authorized shipment where a version source exists; `release-only` changes the version only for an explicit release request. A release request always follows the established release process. Explain a skipped version bump rather than inventing a version source.
+Version preparation follows the selected policy: `project` uses the repository convention; `bump-on-ship` prepares a version for each authorized shipment where a version source exists; `release-only` changes the version only for an explicit release request. These preferences determine when a version is needed, not permission to select one silently. Follow a supplied target version. Otherwise, when a release needs a version choice, ask which version the user wants and optionally recommend an increment. Honor explicit delegation of automatic SemVer selection without asking again. Explain a skipped version bump rather than inventing a version source.
+
+`nightly` defaults to `false`. When enabled, read [optional nightly releases](references/nightly-releases.md) before release preparation or publication. It defines development delivery, published candidates, exact-commit promotion, and version ownership. The setting alone grants no setup or publication authority. With nightly disabled or omitted, use the project’s existing delivery mechanism and the shared tracking below.
 
 ## Discover and prepare
 
@@ -67,10 +71,10 @@ Include necessary stack ancestors and ordinary retargeting within the requested 
 
 ## Prepare the version and changelog
 
-- Before delivery, determine whether the selected versioning policy calls for a bump. If it does not, preserve the version and follow existing changelog conventions. Otherwise inspect the project's authoritative version source, release conventions, and existing automation. Choose the appropriate SemVer increment from the delivered changes: patch for fixes, maintenance, or documentation; minor for backward-compatible features; major for breaking changes, subject to documented pre-1.0 conventions. Respect a requested version. Do not upgrade dependencies.
+- Before delivery, determine whether the selected versioning policy calls for a release version. If it does not, preserve the version and accumulate the scoped changes under Unreleased. Otherwise inspect the project's authoritative version source, release conventions, and existing automation. Use the requested target version. If none was supplied and automatic selection was not explicitly delegated, recommend an appropriate increment and ask for the version before committing or publishing release metadata. Continue independent preparation while waiting. Recommend patch for fixes, maintenance, or documentation; minor for backward-compatible features; major for breaking changes, subject to documented pre-1.0 conventions. Do not upgrade dependencies.
 - Bump once per shipment, including a stack shipped together, not once per commit or retry. Reuse an appropriate version bump already included in the shipment. Update required matching lockfile or workspace version fields with the project's established tools; avoid unrelated lockfile churn or tools that implicitly tag/publish. If existing automation owns versioning, use its established input and verify the resulting bump instead of creating a competing bump.
-- If a changelog exists, follow its format: collect the shipped entries in the new version's section dated YYYY-MM-DD, preserve history, and leave unrelated pending entries under Unreleased. Mark breaking changes and include migration guidance. If no changelog exists, skip this step without creating one; continue versioning and delivery.
-- If the project has no version source or convention, do not invent a manifest. Report the skipped version bump; if a release requires a version and no existing version source (including versioned changelog headings) establishes one, ask for the initial version and where the project should track it.
+- Use the project's authoritative changelog path and format. If none exists, establish `CHANGELOG.md` as part of authorized shipping, with an Unreleased section. Accumulate changes there until release. At release, move only included changes into the target version's section dated YYYY-MM-DD, preserve history, and leave unrelated pending entries under Unreleased. Mark breaking changes and include migration guidance. Do not create a competing changelog alongside an established one.
+- If the project has no version source or convention, prepare a concrete tracking proposal suited to the project, such as a `VERSION` file for a repository without a package manifest. Ask for the required initial version and tracking location unless already supplied or explicitly delegated. Do not invent package or runtime manifests. Prepare the changelog and scoped work while that decision is pending.
 - Include version/changelog changes in the selected PR before its final checks and head inspection, or in the scoped local commit before pushing. For a stack, place shared version changes in the final selected dependent. If branch ownership or protection prevents updating the selected PR, report the concrete blocker rather than silently merging without the bump.
 - Follow mandatory repository checks and run only checks needed for the changed release metadata. Do not add routine full-suite validation. Explain the selected version in the progress update.
 
@@ -117,14 +121,14 @@ Only clean up branches belonging to the requested, confirmed-merged PRs. Recheck
 
 ## Finish the project’s release process
 
-For “release this”, confirm the version update, existing changelog’s dated release section, and delivery to the remote default branch. A project using only these mechanisms needs no further publishing. If the requested version is already delivered and its established release steps are complete, report it complete without another bump.
+For “release this”, confirm the chosen version, the changelog’s dated release section, and delivery through the established release workflow. Ordinarily this is delivery to the remote default branch. With optional nightly support, the stable release must identify the exact tested published candidate commit, as defined in the reference. A project using only a manifest and changelog needs no further publishing. If the requested version is already delivered and its established release steps are complete, report it complete without another bump.
 
 Only when explicitly requested or required by the established project release workflow:
 
-- Follow the repository's tag naming convention and tag the exact delivered version commit. Confirm that an existing tag points to that commit; never move or overwrite a conflicting tag. Create and push a tag only when that step applies.
+- Follow the repository's tag naming convention and tag the exact delivered version commit. With nightly promotion, tag the recorded candidate source commit, not a later tracking commit. Confirm that an existing tag points to the intended commit; never move or overwrite a conflicting tag. Create and push a tag only when that step applies.
 - Publish a release on the selected host only when that step applies and its release interface is available, using the appropriate version tag and notes from the delivered changelog section or, if absent, the inspected changes. Do not include unrelated pending work in release notes. If the request requires a new tag, creating and pushing that tag is included.
 - If automation owns the applicable tag/release step, verify its result instead of duplicating it. Confirm remote tags and published release URLs only for steps actually performed. On partial failure, report completed steps and resume without another version bump or duplicate release.
 
 ## Completion
 
-Report the shipped version, merged PRs or directly pushed commit, deleted branches, and current branch/sync result. Note skipped changelog/version steps and include the release URL when published. Explicitly list any preserved branch and its reason, pending queue item, or incomplete action. For a fully successful run, a concise result is enough: “Merged #123 and #124. Removed both remote/local feature branches. On `main`, up to date with `origin/main`.”
+Report the shipped version, merged PRs or directly pushed commit, deleted branches, and current branch/sync result. Note deferred version choices and include the release URL when published. For nightly promotion, include the candidate version, full source SHA, testing evidence, and any separate tracking commit. Explicitly list any preserved branch and its reason, pending queue item, or incomplete action. For a fully successful run, a concise result is enough: “Merged #123 and #124. Removed both remote/local feature branches. On `main`, up to date with `origin/main`.”

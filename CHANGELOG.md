@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+## 0.5.0 - 2026-10-18
+
+- Share version and changelog tracking across the ship flow, follow supplied release versions, and ask for a version choice unless automatic selection was explicitly delegated.
+- Establish missing changelogs during authorized ship/project setup, keep pending changes under Unreleased, and preserve existing tracking sources and formats.
+- Add optional nightly support, off by default, with unique published candidates, exact tested commit promotion, and one owner for automated version updates.
+- Document setup preferences and unchanged project-first configuration precedence without installing infrastructure or changing personal settings.
+
 ## 0.4.4 - 2026-10-15
 
 - Unify install, status, updates, removal, help, and errors around compact provider rows, consistent spacing, and clear next actions.

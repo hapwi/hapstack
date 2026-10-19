@@ -22,7 +22,7 @@ If Bun cached an installer from before 0.4.1, refresh that short-command entry o
 bunx "github:hapwi/hapstack#$(git ls-remote https://github.com/hapwi/hapstack.git HEAD | cut -f1)" refresh-cli
 ~~~
 
-This refreshes only the owned Bun cache entry whose sole dependency is the unqualified Hapstack GitHub source. It does not clear other packages or install plugins. Targeted cache migration requires a platform that reports the current user's file ownership. After the refresh, use `bunx github:hapwi/hapstack` and `bunx github:hapwi/hapstack status` normally. On other platforms, use the commit-pinned command until Bun refreshes its old cache. The current help header shows `Hapstack 0.4.4`.
+This refreshes only the owned Bun cache entry whose sole dependency is the unqualified Hapstack GitHub source. It does not clear other packages or install plugins. Targeted cache migration requires a platform that reports the current user's file ownership. After the refresh, use `bunx github:hapwi/hapstack` and `bunx github:hapwi/hapstack status` normally. On other platforms, use the commit-pinned command until Bun refreshes its old cache. The current help header shows `Hapstack 0.5.0`.
 
 This installs Hapstack as **one native plugin per provider**, using the Codex and Claude Code plugin managers. Both selected providers need a plugin-capable CLI. It does not copy the bundled skills into your standalone skill folders or replace your personal patcher/ship. Each host owns the plugin cache, namespace, and enabled state. No Hapstack npm publication or MCP server is required.
 
@@ -98,7 +98,7 @@ $hapstack:hap-mode patch to 100 then ship
 
 For linked standalone skills, use `$setup-hapstack` and `$hap-mode` instead. For a native Claude plugin, use `/hapstack:setup-hapstack` and `/hapstack:hap-mode patch to 100`. On other hosts use the supported picker form, which may be plugin-qualified. Exact picker syntax and persistent modes are host features.
 
-Setup detects capabilities, discovers available models, lets you choose a reasoning budget and role/panel models, and selects delegation, tooling, and versioning preferences. It writes user settings outside the package. Project `.agent-workflow/hapstack.md` takes precedence over global `$XDG_CONFIG_HOME/hapstack/config.md` or `~/.config/hapstack/config.md`. Paths resolve for the current operator. See [configuration](skills/setup-hapstack/references/configuration.md).
+Setup detects capabilities, discovers available models, lets you choose a reasoning budget and role/panel models, and selects delegation, tooling, versioning, and optional nightly preferences. It writes user settings outside the package. Project `.agent-workflow/hapstack.md` takes precedence over global `$XDG_CONFIG_HOME/hapstack/config.md` or `~/.config/hapstack/config.md`. Paths resolve for the current operator. See [configuration](skills/setup-hapstack/references/configuration.md).
 
 Without setup, use the current model, delegation on request, existing tooling, and the repository's versioning policy. Setup does not migrate project tools, activate automations, send messages, or change the current chat's model. Model-role choices apply to permitted delegates through supported host APIs. No specific paid model is required.
 
@@ -116,7 +116,7 @@ That is **58 top-level skills**. Principle skills are included in that total. Be
 
 `patch`, `patcher`, and React Doctor target-score requests route to patcher. Patcher works locally with the same agent, preserves the existing framework/package manager/linter, and runs its explicitly requested diagnosis, Improve audit, or fix-to-score workflow. Optional tooling and policy setup require their own selection.
 
-`ship` and `release` route to ship. It resolves the actual remote/default branch, follows the selected versioning policy and repository gates, preserves unrelated work, and performs proven-merged cleanup. Shipping is separate from deployment, registry publishing, and messages. The inherited independent-verification shipping recipe is retained for an explicit verification request; ship still owns delivery.
+`ship` and `release` route to one shared flow with version and changelog tracking. It follows a supplied target version, or asks when a release needs a version choice unless automatic selection was explicitly delegated. It preserves the project's authoritative changelog or establishes `CHANGELOG.md`, accumulates Unreleased changes, and moves only released changes into a dated version entry. Optional nightly support defaults off; when enabled, stable promotion uses an exact tested published candidate commit through existing or separately authorized infrastructure. Development pushes and build artifacts remain separate from releases. Ship resolves the actual remote/default branch, follows repository gates, preserves unrelated work, and performs proven-merged cleanup. Shipping is separate from deployment, registry publishing, and messages. The inherited independent-verification shipping recipe is retained for an explicit verification request; ship still owns delivery.
 
 Other tasks use the matching playbook. Named multi-agent skills can run parallel investigations or review when authorized and supported. A combined patch-and-ship task ships only after the patch acceptance criteria succeed; a blocked score is never reported as 100.
 
