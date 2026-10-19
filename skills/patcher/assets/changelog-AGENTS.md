@@ -2,15 +2,25 @@
 
 ## Changelog
 
-Maintain CHANGELOG.md for every code, configuration, or documentation change,
-including small changes. Create it if missing.
+Maintain CHANGELOG.md as public-facing product documentation, including in private
+projects and developer tools. Create it if missing.
 
-Group related edits into one concise, user-facing entry under [Unreleased], using
-Added, Changed, Deprecated, Removed, Fixed, or Security as appropriate.
+Describe user-visible product behavior under [Unreleased], using Added, Changed,
+Deprecated, Removed, Fixed, or Security as appropriate. Group related changes into
+one concise entry. Include documentation changes when they change guidance users
+rely on. Omit changes with no user-visible effect.
+
+Exclude agent work narration, tests run or their results, local-machine setup,
+commands and checklists performed, internal execution, and packaging or proof
+procedures. Exclude hostnames, local paths, and private identifiers. Describe
+genuine setup or testing-tool features by their changed behavior for users.
+Do not list setup or tests performed merely to get one operator's machine working.
 
 Mark breaking changes explicitly and include migration guidance when needed.
-Preserve existing release history and unrelated entries. Record completed changes,
-not planned work or unperformed checks.
+Preserve required versions, release dates, meaningful compatibility requirements,
+existing release history, and unrelated entries. Include user-facing commands
+when needed to explain changed behavior or migration. Record completed changes,
+not planned work.
 
 ## Release management
 

@@ -50,10 +50,12 @@ Continue other authorized work where it does not depend on that decision.
 ## Finish
 
 For a policy installation or update, create `CHANGELOG.md` if absent with a
-`# Changelog` heading and `## [Unreleased]` section. Record one concise entry for
-the completed setup, following an existing changelog's format and preserving its
-history and unrelated entries. An unchanged policy needs no setup entry. Do not
-backfill unrelated changes, bump versions, or perform release actions.
+`# Changelog` heading and `## [Unreleased]` section. Follow the template's
+public-facing content rule and the existing changelog's format. Installing or
+updating the policy alone needs no entry. If the same work changes product
+behavior, describe that behavior for users. Preserve history and unrelated
+entries. Do not backfill unrelated changes, bump versions, or perform release
+actions.
 
 Check that the installed block matches the template, has exactly one marker pair,
 and that content outside the authorized edit is preserved. Report the affected

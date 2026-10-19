@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.5.2 - 2026-10-19
+
+- Changelogs and release notes describe user-visible product behavior, including setup and testing-tool features, while omitting internal work narration, test runs, and local-machine setup.
+- Changelog policy setup no longer requires an entry solely for installing or updating the policy.
+
 ## 0.5.1 - 2026-10-19
 
 - Clean up proven task-owned, delivered implementation worktrees during ship, including worktrees created before shipping began, before deleting their branches.

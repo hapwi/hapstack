@@ -78,6 +78,20 @@ Include necessary stack ancestors and ordinary retargeting within the requested 
 - Include version/changelog changes in the selected PR before its final checks and head inspection, or in the scoped local commit before pushing. For a stack, place shared version changes in the final selected dependent. If branch ownership or protection prevents updating the selected PR, report the concrete blocker rather than silently merging without the bump.
 - Follow mandatory repository checks and run only checks needed for the changed release metadata. Do not add routine full-suite validation. Explain the selected version in the progress update.
 
+### Write public-facing changelogs
+
+Treat every project's changelog and release notes as public-facing product documentation, including private projects and developer tools. Describe added, changed, fixed, deprecated, removed, or security-related behavior that users can observe. Group related changes into concise entries that say what the product does now. Include documentation changes when they change guidance users rely on. Omit changes with no user-visible effect rather than narrating the work.
+
+Exclude agent work narration, tests run or their results, local-machine setup, commands and checklists performed, internal execution, and packaging or proof procedures. Exclude hostnames, local paths, and private identifiers. A setup feature or testing-tool improvement belongs when it changes the product for its users. Setup or tests performed merely to get one operator's machine working do not.
+
+Keep required release versions, YYYY-MM-DD dates, meaningful compatibility requirements, breaking-change notices, and migration guidance. User-facing commands can appear when needed to explain changed behavior or migration.
+
+Examples:
+
+- Good: "The test runner reports skipped tests in its summary." Bad: "Ran the test suite and confirmed it passed."
+- Good: "Setup preserves existing project settings during upgrades." Bad: "Configured the local machine and checked the package contents."
+- Good: "Changelog entries describe user-visible product changes." Bad: "Updated the shipping docs and verified the new wording."
+
 ## Ship local work directly
 
 Use this path when the conversation identifies local work and no relevant PR is being shipped.
