@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.5.3 - 2026-10-19
+
+- Authorized shipping now selects the recommended version from project policy and included changes by default, reports its rationale, and asks only for unresolved compatibility or conflicting release-policy decisions. Explicit target versions, prerelease progression, and repository approval gates remain in effect.
+
 ## 0.5.2 - 2026-10-19
 
 - Changelogs and release notes describe user-visible product behavior, including setup and testing-tool features, while omitting internal work narration, test runs, and local-machine setup.

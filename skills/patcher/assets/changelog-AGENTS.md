@@ -28,8 +28,15 @@ Follow the repository’s release process and the operator’s explicit versioni
 CHANGELOG.md under [Unreleased] without changing the project version or moving
 entries into a release section.
 
-For an authorized release, derive the SemVer increment from the included changes
-and use YYYY-MM-DD dates. Creating or pushing tags, publishing a release, and
-deploying require authorization for those actions.
+For an authorized release, follow an explicit target version. Otherwise select
+the recommended version from the repository policy and included changes without
+a routine version question, and report the rationale. Use patch for fixes,
+maintenance, or documentation, minor for compatible features, and major for
+breaking changes, subject to the project's pre-1.0 conventions. Preserve the
+established prerelease channel and sequence; shipping alone does not authorize
+stable promotion. Ask only for unresolved compatibility or conflicting
+release-policy decisions. Preserve repository approval gates and use YYYY-MM-DD
+dates. Creating or pushing tags, publishing a release, and deploying require
+authorization for those actions.
 
 <!-- agent-changelog-end -->
