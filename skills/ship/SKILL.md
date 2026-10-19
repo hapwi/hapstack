@@ -2,7 +2,7 @@
 name: ship
 description: Ship PRs or scoped local work with shared version and changelog tracking,
   following the project’s release policy and optional nightly workflow. Handle
-  "release this", confirm the target version, and clean up safely merged PR branches.
+  "release this", confirm the target version, and clean up delivered worktrees and PR branches safely.
   Deployment is separate.
 metadata:
   version: 0.1.0
@@ -11,7 +11,7 @@ license: MIT
 
 # Ship
 
-Ship the work identified by the user or current conversation using `git` and the selected host’s available review tools. Use `gh` only for GitHub repositories. In this skill, “PR” also includes a host’s equivalent merge request. “Ship this”, `$ship`, or a specified PR authorizes committing the scoped work, preparing its version when the applicable policy calls for it, maintaining its changelog, pushing, merging into the default branch, and safely cleaning up merged PR branches. “Main” means the repository's actual default branch. Do not ask for a second approval of these actions. An unresolved version choice is a product decision, not another shipping approval.
+Ship the work identified by the user or current conversation using `git` and the selected host’s available review tools. Use `gh` only for GitHub repositories. In this skill, “PR” also includes a host’s equivalent merge request. “Ship this”, `$ship`, or a specified PR authorizes committing the scoped work, preparing its version when the applicable policy calls for it, maintaining its changelog, pushing, merging into the default branch, and safely cleaning up its delivered worktrees and merged PR branches. This includes implementation worktrees created before ship began when ownership, delivery, and non-use are proven below. “Main” means the repository's actual default branch. Do not ask for a second approval of these actions. An unresolved version choice is a product decision, not another shipping approval.
 
 “Release this” uses the same version-and-delivery workflow and follows the project’s existing release process. Neither phrase by itself introduces tags or GitHub releases. Create or publish those only when explicitly requested or required by the established project release workflow; a historical tag alone does not establish that requirement. A project that tracks releases solely in its manifest and changelog continues doing so. Neither phrase authorizes deployment commands, package-registry publishing, or notification messages. Existing repository automation may run after a push or merge; honor active constraints on its consequences.
 
@@ -31,7 +31,7 @@ Version preparation follows the selected policy: `project` uses the repository c
 
 ## Discover and prepare
 
-- Read applicable repository instructions. Inspect `git status --short`, the current branch, `git worktree list --porcelain`, remotes, and tracking branches. Record the starting state. Identify which local changes belong to the requested shipment. Commit only that work and its version/changelog updates; preserve unrelated edits. Never automatically stash, reset, or discard work.
+- Read applicable repository instructions. Inspect `git status --short`, the current branch, `git worktree list --porcelain`, remotes, and tracking branches. Record the starting state and map task-owned worktree paths, branches, and HEADs to the requested work using conversation or host task records. Creation time and a matching branch name alone do not prove ownership. Identify which local changes belong to the requested shipment. Commit only that work and its version/changelog updates; preserve unrelated edits. Never automatically stash, reset, or discard work.
 - Resolve the delivery remote before choosing a provider tool. Honor an explicit user target; otherwise inspect branch upstream/push configuration and remote fetch/push URLs. Use `origin` when it is the unambiguous delivery target, regardless of provider. If fork/upstream or conflicting push destinations make the target ambiguous, ask before mutation. Never substitute a GitHub remote merely because `gh` is available.
 - Resolve the selected remote’s actual default branch from its advertised HEAD (`git ls-remote --symref REMOTE HEAD`) or verified provider metadata; a cached `refs/remotes/REMOTE/HEAD` can be stale. If neither establishes the default, ask rather than guessing `main`. Do not change remote URLs or tracking configuration to make the workflow fit.
 - Select the provider path below. Check `gh` authentication and repository identity only for GitHub (including a verified Enterprise host). For other providers, use available host-specific tools for PRs and policy; plain Git delivery does not require GitHub authentication.
@@ -65,7 +65,7 @@ Distinguish “no required checks configured” from failed checks, pending chec
 
 A specified PR, unambiguous branch, or “ship this” referring to the work just completed authorizes the corresponding shipment. Ask only when the target or ownership of local changes is ambiguous; a PR is not required for local shipping.
 
-Give a concise progress update with the repository, selected PRs and inspected heads, merge method/order, checks, and intended branch cleanup. This is informational, not an approval gate.
+Give a concise progress update with the repository, selected PRs and inspected heads, merge method/order, checks, and intended worktree/branch cleanup. This is informational, not an approval gate.
 
 Include necessary stack ancestors and ordinary retargeting within the requested shipment; exclude unrelated PRs and unrequested descendants. Ask only for a missing scope decision or a concrete action beyond ordinary shipping, such as resolving ambiguous stack history, rewriting published branches, bypassing protection, or handling local work that prevents safe checkout. Preserve unrelated uncommitted work and branches with additional unmerged commits.
 
@@ -85,7 +85,7 @@ Use this path when the conversation identifies local work and no relevant PR is 
 1. Inspect the exact diff and outgoing commits. Stage explicit paths or hunks belonging to the shipment, including version/changelog edits, and commit them. Do not include unrelated staged changes or local commits.
 2. Fetch the verified remote. If already on the default branch, ensure the outgoing commits are all in scope. Otherwise switch safely to the default branch, fast-forward from the remote, and merge the scoped feature branch. Do not rewrite published history or disturb another worktree. Resolve only routine conflicts within the authorized work; stop for ambiguous conflicts or unrelated changes.
 3. Push normally to the verified default branch; never force-push. If remote advancement rejects the push, fetch and inspect before one safe retry. If branch protection requires a PR, create a focused PR through the selected host’s supported interface and use the PR workflow. If that interface is unavailable, report the blocker; do not bypass protection or push to a different provider.
-4. Fetch and verify the delivered commit is on the remote default branch. Keep local-only feature branches unless their deletion is explicitly requested; PR branch cleanup follows the proven-merged rules below.
+4. Fetch and verify the delivered commit is on the remote default branch. Apply the worktree cleanup gates below to task-owned implementation worktrees. Keep local-only feature branches unless their deletion is explicitly requested; PR branch cleanup follows the proven-merged rules below.
 
 ## Merge and verify
 
@@ -103,11 +103,13 @@ Use this path when the conversation identifies local work and no relevant PR is 
 
 ## Return to main and clean up
 
-Only clean up branches belonging to the requested, confirmed-merged PRs. Recheck the working tree and worktree inventory first.
+Clean up only worktrees demonstrably belonging to the requested, verified delivered shipment and branches belonging to its confirmed-merged PRs. Read and follow the shared [worktree cleanup playbook](../hap-mode/playbooks/worktree-cleanup.md), including its ownership, delivery, activity, and deferred-cleanup gates. Use its existing read-only audit helper as supporting evidence, never as deletion authority. If installed alone without that playbook, retain worktrees and report the missing safety procedure; branch cleanup still follows the rules below.
+
+Recheck the working tree and inventory. Remove eligible worktrees **before either local or remote branch deletion**. A retained worktree keeps its associated branches available; do not delete a ref out from under an active checkout. Do not block independent safe cleanup or verified delivery on a retained worktree.
 
 - Switch the current checkout to the actual default branch when safe. If it does not exist locally, create a tracking branch from the verified remote/default. Fast-forward explicitly from that remote: `git merge --ff-only <remote>/<default>`. Do not use plain `pull` if it could create a merge commit or rebase local work.
 - During PR cleanup, if main is ahead of or diverged from remote, leave its commits intact and report that it is not an exact match. Scoped local shipments use the local workflow above. Do not reset or push it to make the task look complete. If main is checked out in another worktree, do not use `--ignore-other-worktrees` or remove that worktree; report the specific checkout constraint.
-- Before deleting a PR head, confirm no open PR still uses it as its base and no unmerged descendant needs it. Preserve shared stack branches until their dependents are safely retargeted or merged.
+- Before removing a worktree or deleting a PR head, confirm no open PR still uses it as its base and no unmerged descendant needs its branch or checkout. Preserve shared stack dependencies until their dependents are safely retargeted or merged.
 - Remote deletion: verify head repository ownership and the branch's current remote SHA. Delete only a branch belonging to the requested shipment on the matching remote whose tip is the confirmed-merged PR head. Prefer an exact lease to prevent deleting commits pushed since inspection:
 
   ```sh
@@ -116,7 +118,7 @@ Only clean up branches belonging to the requested, confirmed-merged PRs. Recheck
 
   Substitute and shell-quote actual values. This is a guarded deletion, not permission for a general force push. If the branch changed, preserve it and report why. Treat already-deleted remote branches as success. Do not delete branches in contributors' forks unless the user specifically approved that repository and branch.
 - Local deletion: ensure the branch is not checked out in any worktree. Use `git branch -d BRANCH` when ancestry permits. Squash/rebase merges may require `-D`; allow that only after the selected host confirms the PR merged at the recorded head and the local tip equals or is an ancestor of that original PR head. This proves the local branch has no additional commits outside the delivered work. Otherwise preserve it. Never force-delete based on a matching branch name, a closed PR, or the presence of a squash commit alone.
-- Never delete the default branch, release/protected branches, unrelated branches, or pre-existing worktrees. Remove only temporary worktrees created by this invocation, and only while clean; leave preserved work accessible.
+- Never delete the default branch, release/protected branches, unrelated branches, or their worktrees. Pre-existing implementation worktrees and this invocation's temporary worktrees use the same safety gates. Preserve dirty or in-use checkouts, additional unmerged commits, locks, and unknown host ownership. Use the host's supported lifecycle for managed worktrees and ordinary `git worktree remove` for unmanaged ones; never force removal or bypass a refusal.
 - Fetch/prune again and verify the final branch, status, and `HEAD` versus the fetched default ref. Confirm each intended remote and local deletion. Do not create tags, releases, deployments, or notification messages as an incidental part of shipping.
 
 ## Finish the project’s release process
@@ -131,4 +133,4 @@ Only when explicitly requested or required by the established project release wo
 
 ## Completion
 
-Report the shipped version, merged PRs or directly pushed commit, deleted branches, and current branch/sync result. Note deferred version choices and include the release URL when published. For nightly promotion, include the candidate version, full source SHA, testing evidence, and any separate tracking commit. Explicitly list any preserved branch and its reason, pending queue item, or incomplete action. For a fully successful run, a concise result is enough: “Merged #123 and #124. Removed both remote/local feature branches. On `main`, up to date with `origin/main`.”
+Report the shipped version, merged PRs or directly pushed commit, deleted branches, and current branch/sync result. Report removed versus retained worktree paths with concrete reasons, including an active shipping worker's deferred cleanup receipt and how to resume it from outside that checkout. Note deferred version choices and include the release URL when published. For nightly promotion, include the candidate version, full source SHA, testing evidence, and any separate tracking commit. Explicitly list any preserved branch and its reason, pending queue item, or incomplete action. Keep successful results concise without omitting retained work.

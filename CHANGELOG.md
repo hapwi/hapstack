@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.5.1 - 2026-10-19
+
+- Clean up proven task-owned, delivered implementation worktrees during ship, including worktrees created before shipping began, before deleting their branches.
+- Require exact ownership and delivery evidence for squash/rebase merges; retain local files, extra commits, protected branches, needed stack dependencies, and active or unknown host bindings.
+- Replace forced worktree deletion with the supported host lifecycle or ordinary Git removal, and record private receipts for safe cleanup after a shipping worker finishes.
+- Extend the existing audit helper to flag ignored/untracked files, locks, missing paths, and in-progress operations, with isolated Git fixture checks.
+
 ## 0.5.0 - 2026-10-18
 
 - Share version and changelog tracking across the ship flow, follow supplied release versions, and ask for a version choice unless automatic selection was explicitly delegated.
