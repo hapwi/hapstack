@@ -26,23 +26,21 @@ Swap in the real paths, skills, and done checks. Informal wording works.
 - `/hap-mode prototype a few options for <feature>. take screenshots or videos for me to compare.`
 - `/hap-mode we need <feature>. /architect it first, and answer open questions with prototypes. let me review before proceeding.`
 - `/hap-mode write a tutorial for how i would use <new package> first. then /teach me why it beats the current one.`
-- `ask /arena for a second opinion on this thread and our approach.`
 - `/hap-mode turn this design into a plan. small verifiable PRs, each with its own verification steps.`
 - `/hap-mode plan the migration of <library> to <target>. small verifiable PRs. the result must match the original exactly, bugs included.`
 
 ## Review and ship
 
 - `/interrogate the whole branch, but skeptically. don't change anything yet. no nitpicks unless it's a real bug or regression.` Read the dismissals too.
-- `/swarm check every package under <dir> against its check script. one worker per package. one report.`
 - `/hap-mode open the pr. small ordered commits, evidence in the description.`
 - `/hap-mode babysit this pr. get it green.` For status only: `/hap-mode check on pr <number>. anything outstanding?`
 - `/hap-mode land the stack.`
+- `/hap-mode full send` takes the current change to a merged PR without you. `/hap-mode full stop` does the same and leaves the merge to you.
 
 ## Away and back
 
 - `/hap-mode im going to bed. <goal> in a fresh worktree off <base>. done means <checks>. keep a decision log. don't ask me before committing. continue until done. if you're truly stuck after a few hours, stop and write up why.`
 - `/show-me-your-work catch me up on what you did last night.` Read its Attention section first.
-- `/hap-mode full autopilot on this queue. each item is independent.`
-- `/hap-mode autopilot these changes but stack them, don't ship. i'll land the stack.`
+- `/hap-mode full send. <goal>. done means <checks>.` Use it when you won't be watching.
 - `/reflect capture what we learned so the next run doesn't repeat it.` Approve only edits that change a future decision.
 - `/bro` restates the last reply in plain words.

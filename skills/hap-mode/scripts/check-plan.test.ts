@@ -15,12 +15,9 @@ One box is one unit of work and names the evidence. Check a box only when its ev
 ${rule}
 
 ## Program checklist
-### Arm the program
-### Spawn owners
+### Run the program
 ### PR mechanics
-### Verdict and merge
-### Boot recipe
-Read the installed instructions under \`HAP_MODE_DIR\`. hourly audit schedule status message
+Read the installed instructions under \`HAP_MODE_DIR\`.
 
 ## PR 1
 **Depends on.** None.
@@ -32,8 +29,9 @@ Read the installed instructions under \`HAP_MODE_DIR\`. hourly audit schedule st
 - [ ] Do the thing.
 **Verify, unit.** ${rule}
 - [ ] Check the thing.
-**Verify, live.** ${rule} Ten lanes on \`example-model\` at the PR head
-${Array.from({ length: 10 }, (_, i) => `- [ ] Lane ${i + 1}. Save \`lane-${i + 1}.png\`. Pass when evidence exists.`).join("\n")}
+**Verify, live.** ${rule}
+- [ ] Regression against trunk. Save \`trunk.png\`. Pass when evidence exists.
+- [ ] Open the page. Save \`page.png\`. Pass when evidence exists.
 **Verify, perf.** ${rule}
 - [ ] Metric. Recorded.
 - [ ] Probe. Recorded.
@@ -88,6 +86,20 @@ test("rejects headings and prose outside a proper close", () => {
 
 	const prose = runPlan("```markdown\nThis prose has a mid-sentence colon: inside code\n```\nThis prose has a mid-sentence colon: bad.\n", 1);
 	expect(prose.stderr).toContain("mid-sentence colon");
+});
+
+test("rejects a live block without a trunk regression or pass predicate", () => {
+	const directory = mkdtempSync(join(tmpdir(), "check-plan-test-"));
+	const file = join(directory, "plan.md");
+	writeFileSync(file, validPlan.replace("- [ ] Regression against trunk. Save \`trunk.png\`. Pass when evidence exists.", "- [ ] Open another page."));
+	try {
+		const result = spawnSync("node", [checker, file], { encoding: "utf8" });
+		expect(result.status).toBe(1);
+		expect(result.stderr).toContain('lacks a "Regression against trunk." box');
+		expect(result.stderr).toContain("live box has no pass predicate");
+	} finally {
+		rmSync(directory, { recursive: true, force: true });
+	}
 });
 
 test("rejects backtick info strings containing a backtick", () => {

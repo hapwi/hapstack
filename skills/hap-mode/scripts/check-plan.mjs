@@ -4,7 +4,6 @@ import process from "node:process";
 
 const RULE =
 	"Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.";
-const LANES = /Ten lanes on `[^`<>]+` at the PR head/;
 const SUB_BLOCKS = [
 	"Depends on.",
 	"Files.",
@@ -16,8 +15,8 @@ const SUB_BLOCKS = [
 	"Review gate.",
 	"Merge.",
 ];
-const PROGRAM_H3 = ["Arm the program", "Spawn owners", "PR mechanics", "Verdict and merge", "Boot recipe"];
-const PROGRAM_MARKERS = ["HAP_MODE_DIR", "hourly audit schedule", "status message"];
+const PROGRAM_H3 = ["Run the program", "PR mechanics"];
+const PROGRAM_MARKERS = ["HAP_MODE_DIR"];
 const HOW_TO_READ_MARKERS = [
 	"One box is one unit of work",
 	"names the evidence",
@@ -155,14 +154,11 @@ for (const pr of prSections) {
 
 	const live = block("Verify, live.");
 	if (live) {
-		if (!LANES.test(live.rest)) fail(live.n, `${pr.title}: Verify, live lacks "Ten lanes on \`<swarm workers model>\` at the PR head" with the model filled in`);
-		const lanes = boxes(live.lines).map((b) => ({ ...b, m: b.text.match(/^Lane (\d+)\. /) }));
-		const numbers = lanes.filter((b) => b.m).map((b) => Number(b.m[1])).sort((a, b) => a - b);
-		if (numbers.join(",") !== "1,2,3,4,5,6,7,8,9,10") fail(live.n, `${pr.title}: lanes are [${numbers.join(",")}], expected 1 to 10`);
-		for (const lane of lanes) {
-			if (!lane.m) fail(lane.n, `${pr.title}: live box is not a lane`);
-			else if (!/Save `[^`]+`/.test(lane.text)) fail(lane.n, `${pr.title}: lane ${lane.m[1]} names no screenshot`);
-			else if (!lane.text.includes("Pass when")) fail(lane.n, `${pr.title}: lane ${lane.m[1]} has no pass predicate`);
+		const liveBoxes = boxes(live.lines);
+		if (liveBoxes.length === 0) fail(live.n, `${pr.title}: Verify, live has no box`);
+		if (!liveBoxes.some((b) => b.text.startsWith("Regression against trunk."))) fail(live.n, `${pr.title}: Verify, live lacks a "Regression against trunk." box`);
+		for (const b of liveBoxes) {
+			if (!b.text.includes("Pass when")) fail(b.n, `${pr.title}: live box has no pass predicate`);
 		}
 	}
 

@@ -25,9 +25,6 @@ roles:
   why synthesizer: inherit-parent
   reflect tooling: inherit-parent
   reflect judgment, divergent, synthesizer: inherit-parent
-  arena runners: [inherit-parent, inherit-parent]
-  arena cross-judge pool: [inherit-parent]
-  swarm workers: inherit-parent
   architect runners: [inherit-parent, inherit-parent]
   interrogate reviewers: [inherit-parent, inherit-parent]
 ```
@@ -37,7 +34,7 @@ roles:
 - `tooling`: preserve or vite-plus-bun. A preference can offer setup; it never authorizes automatic migration.
 - `versioning`: project, bump-on-ship, release-only. Project follows repository conventions. Bump-on-ship prepares a version per authorized shipment when a version source exists. Release-only changes a version for an explicit release request. The policy controls when a version is needed. For authorized shipping, ship follows a supplied target version or selects the recommended version from project policy and included changes without a routine question. It reports the rationale, preserves prerelease progression, and asks only for unresolved compatibility or conflicting release-policy decisions. None invents a manifest or bypasses gates.
 - `nightly`: boolean, default `false`. Optional nightly publication and exact tested candidate promotion within the common ship flow. Development pushes/builds do not become releases. Nightlies use unique prerelease versions without stable bump commits; stable promotion uses the tested published candidate SHA rather than moving integration HEAD. Existing automation owns its version/finalization steps, without competing local bumps. See [optional nightly releases](../../ship/references/nightly-releases.md). This preference grants no infrastructure setup, scheduling, publication, deployment, or messaging authority.
-- `changelog_policy`: on-request or offer. Offer allows patcher to present its optional template; installation still requires the user's selection. This setting does not disable ship's common changelog tracking. Authorized ship/project setup preserves the established changelog or creates `CHANGELOG.md` with Unreleased when absent. Entries follow [ship's public-facing content rule](../../ship/SKILL.md#write-public-facing-changelogs) and describe changed product behavior. Installing a policy or setting up one operator's machine alone needs no entry. Release moves only included changes into a dated version entry.
+- `changelog_policy`: on-request or offer. Offer allows patcher to present the changelog skill's optional project policy; installation still requires the user's selection. This setting does not disable ship's common changelog tracking. Authorized ship/project setup preserves the established changelog or creates `CHANGELOG.md` with Unreleased when absent. Entries follow [the changelog writing guide](../../changelog/references/writing.md) and describe changed product behavior. Installing a policy or setting up one operator's machine alone needs no entry. Release moves only included changes into a dated version entry.
 - Role values are `inherit-parent`, alias `auto`, or objects with verified `provider`, `model`, and optional `options`. Panels are nonempty lists of such values, one run per entry. IDs and option values come from live discovery, never constructed effort suffixes.
 
 Current-model panels provide independent runs but not model diversity. This file does not change the current chat's model/effort; it configures permitted delegates through supported host APIs.

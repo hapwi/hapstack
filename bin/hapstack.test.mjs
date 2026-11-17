@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -27,7 +27,7 @@ test('one bundle, provider links, updates, and exact original restoration', () =
     original(root);
     run(root, 'install');
     const record = () => JSON.parse(readFileSync(join(root, '.agents/hapstack/install.json')));
-    assert.equal(record().links.length, 116);
+    assert.equal(record().links.length, 64);
     assert.equal(record().packages.length, 1);
     for (const entry of record().links) {
       const path = join(root, entry.root, 'skills', entry.name);
@@ -36,7 +36,7 @@ test('one bundle, provider links, updates, and exact original restoration', () =
       assert(existsSync(join(path, 'SKILL.md')));
     }
     assert(existsSync(join(root, '.agents/skills/hap-mode/references/agents/hap-agent.md')));
-    assert.match(run(root, 'status'), /58 skill links/);
+    assert.match(run(root, 'status'), /32 skill links/);
     run(root, 'install');
     assert.equal(record().packages.length, 1);
     run(root, 'uninstall');
@@ -47,6 +47,28 @@ test('one bundle, provider links, updates, and exact original restoration', () =
     assert.equal(record().links.length, 0);
     assert.equal(readdirSync(join(root, '.agents/hapstack/packages')).length, 0);
     run(root, 'uninstall');
+  } finally { rmSync(root, { recursive: true }); }
+});
+
+test('update removes links for retired skills and restores their originals', () => {
+  const root = fixture();
+  try {
+    run(root, 'install', '--agent', 'codex');
+    const receiptFile = join(root, '.agents/hapstack/install.json');
+    const retired = join(root, '.agents/hapstack/packages/retired/skills/swarm');
+    const backup = join(root, 'backup/swarm');
+    mkdirSync(retired, { recursive: true }); writeFileSync(join(retired, 'SKILL.md'), 'retired bundled skill');
+    mkdirSync(backup, { recursive: true }); writeFileSync(join(backup, 'SKILL.md'), 'original private swarm');
+    const link = join(root, '.agents/skills/swarm');
+    symlinkSync(retired, link, 'dir');
+    const record = JSON.parse(readFileSync(receiptFile));
+    record.links.push({ root: '.agents', name: 'swarm', target: retired, backup });
+    record.agents.codex.version = '0.0.1';
+    writeFileSync(receiptFile, JSON.stringify(record));
+    run(root, 'install', '--agent', 'codex', '--yes');
+    assert(!lstatSync(link).isSymbolicLink());
+    assert.equal(readFileSync(join(link, 'SKILL.md'), 'utf8'), 'original private swarm');
+    assert(!JSON.parse(readFileSync(receiptFile)).links.some(entry => entry.name === 'swarm'));
   } finally { rmSync(root, { recursive: true }); }
 });
 

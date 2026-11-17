@@ -301,12 +301,15 @@ async function install({ inspected, approvedUpdates = false } = {}) {
     if (!bundle) {
       mkdirSync(join(data, 'packages'), { recursive: true });
       bundle = mkdtempSync(join(data, 'packages', `${version}-`));
-      for (const name of ['skills', 'docs', 'assets', 'automations', 'plugin.json', 'package.json', 'LICENSE', 'CREDITS.md', 'UPSTREAM', 'CATALOG.md', 'README.md']) cpSync(join(packageRoot, name), join(bundle, name), { recursive: true });
+      for (const name of ['skills', 'docs', 'assets', 'plugin.json', 'package.json', 'LICENSE', 'CREDITS.md', 'UPSTREAM', 'CATALOG.md', 'README.md']) cpSync(join(packageRoot, name), join(bundle, name), { recursive: true });
       receipt.packages ||= [];
       receipt.packages.push({ path: bundle, hash: hashTree(bundle) });
       save();
     }
     const root = directories[agent];
+    for (const entry of [...receipt.links]) if (entry.root === root && !names.includes(entry.name) && restore(entry)) {
+      receipt.links = receipt.links.filter(candidate => candidate !== entry); save();
+    }
     for (const name of names) {
       const path = join(base, root, 'skills', name);
       let entry = receipt.links.find(candidate => candidate.root === root && candidate.name === name);
@@ -382,9 +385,11 @@ function migrate() {
   if (!legacyBackup || !existsSync(legacyBackup)) fail('Migration requires --legacy-backup PATH from your original copy installation.');
   if (project || selected.some(agent => receipt.agents[agent]?.strategy !== 'native')) fail('Install the native plugins first, then migrate the old copies.');
   const roots = [...new Set(selected.map(agent => directories[agent]))];
+  const migratable = [...new Set([...names, ...Object.keys(legacyHashes)])].sort();
   const matches = (path, name) => {
     const hash = hashTree(path);
-    return hash === legacyHashes[name] || hash === hashTree(join(packageRoot, 'skills', name));
+    const current = join(packageRoot, 'skills', name);
+    return hash === legacyHashes[name] || (existsSync(current) && hash === hashTree(current));
   };
   for (const root of roots) {
     const skillRoot = join(base, root, 'skills');
@@ -393,7 +398,7 @@ function migrate() {
   for (const entry of receipt.migrations || []) {
     if (entry.restored || !roots.includes(entry.root)) continue;
     const path = join(base, entry.root, 'skills', entry.name);
-    if (!Object.values(directories).includes(entry.root) || !names.includes(entry.name)) fail('Invalid migration record.');
+    if (!Object.values(directories).includes(entry.root) || !migratable.includes(entry.name)) fail('Invalid migration record.');
     if (present(path)) {
       if (!matches(path, entry.name)) fail(`Preserved changed path during migration recovery: ${path}`);
       rmSync(path, { recursive: true });
@@ -402,7 +407,7 @@ function migrate() {
     entry.restored = true; save();
   }
   const candidates = [];
-  for (const root of roots) for (const name of names) {
+  for (const root of roots) for (const name of migratable) {
     const path = join(base, root, 'skills', name);
     if (!present(path)) continue;
     if (lstatSync(path).isSymbolicLink()) { ui.note(`Preserved untracked symlink: ${path}`, 'warn'); continue; }

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Changelog"
+  short_description: "Keep a plain-language public changelog"
+  default_prompt: "Use $changelog to set up, update, or check this project's public changelog."

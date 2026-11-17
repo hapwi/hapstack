@@ -33,18 +33,7 @@ Read [configuration](../setup-hapstack/references/configuration.md) when that bu
 
 ## Project changelog policy setup
 
-For all modes, including Improve, inspect the target project's root `AGENTS.md`
-for a `agent-changelog` block or an existing changelog policy. The bundled
-[policy template](assets/changelog-AGENTS.md) is the authoritative text.
-Read [policy setup](references/changelog-policy.md) when installation,
-reconciliation, or an update is needed. An identical marked block needs no work.
-
-Offer missing policy setup only when the user requests policy setup or has selected that preference in the package configuration. Offer it once alongside other setup choices; reuse prior
-acceptance or refusal in the conversation and continue independent diagnostics
-while awaiting a choice. An explicit request such as “patcher, set up the changelog
-policy” authorizes this setup without running diagnostics. Diagnosis, review, and
-status-only requests remain read-only for policy files unless setup is explicitly
-selected. Do not treat authorization for code fixes as initial policy consent.
+The changelog policy and its setup belong to the bundled [changelog skill](../changelog/SKILL.md). On every run, check the project's policy with that skill's **Keep the project policy current** step. Pass `--update` only on runs that may edit files; read-only runs report an available update instead. Offer a missing policy only when the user requests policy setup or has selected that preference in the package configuration. Offer it once alongside other setup choices, reuse prior acceptance or refusal in the conversation, and continue independent diagnostics while awaiting a choice. An explicit request such as "patcher, set up the changelog policy" runs the changelog skill's setup without diagnostics. Diagnosis, review, and status-only requests leave policy files alone. Authorization for code fixes is not consent to install the policy. When the project keeps a changelog, add Unreleased entries for the fixes per the changelog skill.
 
 ## Detect the project and agree on setup
 

@@ -2,9 +2,9 @@
 
 <img src="assets/hapstack-logo.png" alt="Hapstack stacked H logo" width="112" />
 
-Hapstack is a portable engineering workflow plugin built from Lauren Tan's [pstack](https://github.com/cursor/plugins/tree/main/pstack), with reusable React diagnostics and project-aware shipping.
+Hapstack is a portable engineering workflow plugin built from Lauren Tan's [pstack](https://github.com/cursor/plugins/tree/main/pstack), with reusable React diagnostics, project-aware shipping, and PR workflow ideas from Theo Browne's [tstack](https://github.com/t3dotgg/tstack).
 
-Use **hap-mode** as the entry point. It routes a task to the right skill or playbook. **patch to 100** uses the bundled patcher; **ship this** uses the bundled ship. Other requests use the adapted pstack workflows and engineering principles.
+Use **hap-mode** as the entry point. It routes a task to the right skill or playbook. **patch to 100** uses the bundled patcher. **ship this** uses the bundled ship. **full send** takes one change all the way to a merged PR while you are away, and **full stop** does the same but leaves the merge to you. Other requests use the adapted pstack workflows and engineering principles.
 
 ## Install
 
@@ -22,7 +22,7 @@ If Bun cached an installer from before 0.4.1, refresh that short-command entry o
 bunx "github:hapwi/hapstack#$(git ls-remote https://github.com/hapwi/hapstack.git HEAD | cut -f1)" refresh-cli
 ~~~
 
-This refreshes only the owned Bun cache entry whose sole dependency is the unqualified Hapstack GitHub source. It does not clear other packages or install plugins. Targeted cache migration requires a platform that reports the current user's file ownership. After the refresh, use `bunx github:hapwi/hapstack` and `bunx github:hapwi/hapstack status` normally. On other platforms, use the commit-pinned command until Bun refreshes its old cache. The current help header shows `Hapstack 0.5.3`.
+This refreshes only the owned Bun cache entry whose sole dependency is the unqualified Hapstack GitHub source. It does not clear other packages or install plugins. Targeted cache migration requires a platform that reports the current user's file ownership. After the refresh, use `bunx github:hapwi/hapstack` and `bunx github:hapwi/hapstack status` normally. On other platforms, use the commit-pinned command until Bun refreshes its old cache. The current help header shows `Hapstack 0.6.0`.
 
 This installs Hapstack as **one native plugin per provider**, using the Codex and Claude Code plugin managers. Both selected providers need a plugin-capable CLI. It does not copy the bundled skills into your standalone skill folders or replace your personal patcher/ship. Each host owns the plugin cache, namespace, and enabled state. No Hapstack npm publication or MCP server is required.
 
@@ -104,19 +104,20 @@ Without setup, use the current model, delegation on request, existing tooling, a
 
 ## Included
 
-- All 53 upstream top-level skills, with poteto-mode renamed hap-mode, poteto-help renamed hap-help, and setup-pstack renamed setup-hapstack.
-- All 23 playbooks and 24 engineering principles.
-- Patcher and ship, generalized for public use.
-- Bundled deslop plus portable control-ui/control-cli adapters.
-- Agent briefs, the ten-part guide, orchestration and PR helper sources, and the dormant Benny automation pack.
+- **32 skills.** hap-mode, patcher, and ship are the core. The changelog skill keeps a full, plain-language public changelog, including behind-the-scenes work: it creates one when a project has none, adds entries as part of each PR, checks for missing entries, and prepares release sections. The rest cover understanding (how, why, teach, recall), design and review (architect, interrogate, blast-radius), verification (tdd, control-ui, control-cli), writing and cleanup (unslop, deslop, no-comments), and long-running work.
+- **24 engineering principles** under [hap-mode/references/principles](skills/hap-mode/references/principles/). hap-mode reads the ones a task needs. They no longer appear as separate skills in your picker.
+- **21 playbooks** under hap-mode, including Full send, Babysit, and Opening a PR.
+- Agent briefs, the ten-part guide, a plan checker, and a worktree audit helper.
 
-That is **58 top-level skills**. Principle skills are included in that total. Benny's three nested automation instruction files are separate from top-level skill discovery. See [the catalogue](CATALOG.md) and [the guide](docs/guide/README.md). An [interactive catalogue](docs/catalogue.html) is included for browsing locally in a web browser.
+Compared with pstack, Hapstack drops arena, swarm, make-bot-ui, the Benny automation pack, the orchestration and autopilot playbooks, and their TypeScript helpers. Updating a linked install removes the links for those retired skills and restores any original skill they replaced. See [the catalogue](CATALOG.md) and [the guide](docs/guide/README.md). An [interactive catalogue](docs/catalogue.html) is included for browsing locally in a web browser.
 
 ## How the mode routes work
 
 `patch`, `patcher`, and React Doctor target-score requests route to patcher. Patcher works locally with the same agent, preserves the existing framework/package manager/linter, and runs its explicitly requested diagnosis, Improve audit, or fix-to-score workflow. Optional tooling and policy setup require their own selection.
 
-`ship` and `release` route to one shared flow with version and changelog tracking. For authorized shipping, it follows a supplied target version or selects the recommended version from project policy and included changes without a routine question. It reports the rationale, preserves prerelease progression and repository gates, and asks only for unresolved compatibility or conflicting release-policy decisions. It preserves the project's authoritative changelog or establishes `CHANGELOG.md`, accumulates Unreleased changes, and moves only released changes into a dated version entry. Changelogs and release notes follow [ship's public-facing content rule](skills/ship/SKILL.md#write-public-facing-changelogs). Entries describe changed product behavior and exclude agent work narration, test runs, and local-machine setup. Genuine setup and testing-tool features remain product changes. Required versions, dates, compatibility notices, and breaking-change guidance remain part of the release. Optional nightly support defaults off; when enabled, stable promotion uses an exact tested published candidate commit through existing or separately authorized infrastructure. Development pushes and build artifacts remain separate from releases. Ship resolves the actual remote/default branch, follows repository gates, preserves unrelated work, and performs proven-merged cleanup. Shipping is separate from deployment, registry publishing, and messages. The inherited independent-verification shipping recipe is retained for an explicit verification request; ship still owns delivery.
+`full send` runs the [Full send playbook](skills/hap-mode/playbooks/full-send.md): finish the change, prove it, review it, open the PR, babysit it, and merge it through ship once the merge gate passes. `full stop` stops at merge-ready. Only these phrases grant that autonomy. Proof, the merge gate, and the rules for when to ask come from tstack's `full-send`.
+
+`ship` and `release` route to one shared flow with version and changelog tracking. For authorized shipping, it follows a supplied target version or selects the recommended version from project policy and included changes without a routine question. It reports the rationale, preserves prerelease progression and repository gates, and asks only for unresolved compatibility or conflicting release-policy decisions. It preserves the project's authoritative changelog or establishes `CHANGELOG.md`, accumulates Unreleased changes, and moves only released changes into a dated version entry. Changelogs and release notes follow [the changelog writing guide](skills/changelog/references/writing.md). Every meaningful change gets an entry, including behind-the-scenes work, written in plain language for people who use the product. Entries say what changed and why it matters, and leave out how the work was done. Anything users must act on goes under Action needed with clear steps. Optional nightly support defaults off; when enabled, stable promotion uses an exact tested published candidate commit through existing or separately authorized infrastructure. Development pushes and build artifacts remain separate from releases. Ship resolves the actual remote/default branch, follows repository gates, preserves unrelated work, and performs proven-merged cleanup. Shipping is separate from deployment, registry publishing, and messages. The inherited independent-verification shipping recipe is retained for an explicit verification request; ship still owns delivery.
 
 Other tasks use the matching playbook. Named multi-agent skills can run parallel investigations or review when authorized and supported. A combined patch-and-ship task ships only after the patch acceptance criteria succeed; a blocked score is never reported as 100.
 
@@ -128,9 +129,9 @@ Other tasks use the matching playbook. Named multi-agent skills can run parallel
 - Patcher's numeric React Doctor score needs React source and a supported package runner; upstream score/network availability can limit verification.
 - Shipping needs Git and the correct forge tools/authentication. GitHub workflows use gh. Other hosts use their supported tools.
 - T3 delegation, PR registration/watching, and scheduling use T3's existing tools when present. Another host uses its native equivalents. Missing tools are reported, not invented.
-- Bun is needed only for optional inherited TypeScript helpers. The helper bootstrap installs its lockfile dependencies when that helper is explicitly invoked; setup does not run it. Graphite is optional for the inherited orch frontier command.
+- Bun is needed only to run the plan checker's tests. The plan checker itself runs on Node.
 - The worktree audit needs Bash, Git, and its documented system utilities. It uses no default private transcript directory. An operator can supply HAPSTACK_TRANSCRIPTS_DIR for the selected workspace.
-- Benny, webhook UIs, and persistent jobs need separately authorized setup and available service/scheduler controls. They are dormant at installation.
+- Persistent jobs and schedules need separately authorized setup and available scheduler controls.
 
 A public repo or portable manifest does not prove every workflow works on every host. This first version validates package metadata, references, discovery, and selected changed helpers; live multi-provider workflows and publishing to third-party services need their own authorized use and evidence.
 

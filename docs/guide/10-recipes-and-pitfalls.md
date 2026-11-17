@@ -36,21 +36,13 @@ You pick from things that run, not from descriptions. The agent answers its own 
 
 Ask only after the design settles. The plan is the deliverable, and it names the playbook that will execute it.
 
-## Get a second opinion on a design
+## Take a change to merged while you are away
 
 ```text
-ask /arena for a second opinion on this thread and our approach
+/hap-mode full send. fix the flaky upload retry. done means the retry test passes 20 runs in a row.
 ```
 
-Your current design becomes one candidate among several, and the synthesis tells you whether the panel found something better or confirmed what you had. Cheap insurance before a costly commitment.
-
-## Check independent slices in parallel
-
-```text
-/swarm check every package under packages/ against its check.sh. one worker per package. one report.
-```
-
-Each worker owns one package. The parent waits for every slice and returns one `PASS`, `ISSUES`, or `BLOCKED` report instead of raw worker dumps.
+The agent finishes the change, proves it, gets a review, opens the PR, babysits it through CI and review bots, and merges it through ship. It asks only when it cannot prove the change or the next step needs authority you did not give. Say `full stop` instead to review and merge it yourself.
 
 ## Review a branch skeptically
 
@@ -136,7 +128,7 @@ That's the whole prompt. [`/bro`](../../skills/bro/SKILL.md) restates the last m
 
 ## The pitfalls
 
-- **Enumerating skills in the prompt.** "use /how then /architect then /arena" reorders steps the playbook already sequences. State the goal and constraints. Name a skill only to override a default.
+- **Enumerating skills in the prompt.** "use /how then /architect then /interrogate" reorders steps the playbook already sequences. State the goal and constraints. Name a skill only to override a default.
 - **A vague finish condition.** "make it better" gives the host’s continuation mechanism nothing to check. Give a command or artifact that can pass or fail.
 - **Leading with your theory of the cause.** The agent searches wherever you pointed. Ask it to restate the problem first, then share your hunch.
 - **Taking the first design.** One attempt locks in the first shape the model thought of. Ask for prototypes or `/architect` and pick from evidence.
@@ -145,7 +137,6 @@ That's the whole prompt. [`/bro`](../../skills/bro/SKILL.md) restates the last m
 - **Looping before you trust the loop.** A loop that can't verify its own work only makes unchecked work faster. Get the verification skill working first.
 - **Trusting an unvetted number.** A warm cache or a skipped code path can fake a speedup. Run `/benchmark-checklist` before the number goes anywhere.
 - **Correcting the same mistake by hand.** A correction in chat helps one run. `/correct` fixes the repo so no later run repeats it.
-- **Using `/arena` for coverage.** `/arena` repeats one design or code brief, then picks a base and grafts the best parts. `/swarm` partitions slices or declared race arms and aggregates one report.
 - **Accepting every review comment.** Bots and humans both file real catches and noise in one list. `/interrogate` sorts findings into act-on and dismissed buckets with reasons, and you can override either way.
 - **Treating `auto` as a model slug.** `auto` and `inherit-parent` mean "omit the model field so the subagent inherits the parent chat model." [Setup](./01-setup.md) covers the roles.
 - **Reporting success off a green build.** A build proves it compiles. Ask for the real command, flow, stored value, or profile, and expect the evidence in the reply.

@@ -2,6 +2,30 @@
 
 ## Unreleased
 
+## 0.6.0 - 2026-11-16
+
+Hapstack is leaner and can now take a change all the way to a merged pull request on its own, with a plain-language changelog kept along the way.
+
+### Action needed
+- Arena, swarm, make-bot-ui, the Benny automation pack, and the autopilot and orchestration modes have been removed. If you used them, ask hap-mode for the task directly. It still runs design comparisons and parallel work when you ask for them.
+
+### New
+- Say `full send` and your agent takes a change all the way to a merged pull request while you're away: it checks the change works, gets it reviewed, opens the pull request, handles review feedback, and merges it. Say `full stop` to do the same but leave the final merge to you.
+- A new changelog skill keeps a plain-language changelog for your project. It creates one if you don't have one, adds an entry with each pull request, finds changes that are missing, and prepares each release.
+
+### Improved
+- Pull request titles now say why a change matters, and descriptions open with the problem it solves.
+- Watching a pull request is simpler and quieter, and fixes found during review no longer make the pull request grow beyond its purpose.
+- The 24 engineering principles no longer fill your skill list. hap-mode still uses them.
+- Changelogs now record every meaningful change, including behind-the-scenes work, written in plain words for people who use the product, with clear steps whenever you need to do something.
+- The changelog rules Hapstack adds to your project's AGENTS.md now show their version, and Hapstack keeps them up to date for you. If you have edited them, Hapstack leaves your version alone and shows you the new one to approve instead.
+- Written plans for larger projects are lighter: each step needs only the checks that prove it works, instead of a fixed set of ten.
+- Hapstack is smaller and quicker to install and update, now that helper programs it no longer needs are gone.
+- Credits now include tstack by Theo Browne, which the new pull request features build on.
+
+### Fixed
+- Updating Hapstack now removes leftover skills it no longer includes and brings back any skill of yours that one had replaced.
+
 ## 0.5.3 - 2026-10-19
 
 - Authorized shipping now selects the recommended version from project policy and included changes by default, reports its rationale, and asks only for unresolved compatibility or conflicting release-policy decisions. Explicit target versions, prerelease progression, and repository approval gates remain in effect.

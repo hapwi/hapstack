@@ -11,7 +11,7 @@ license: MIT
 
 # Ship
 
-Ship the work identified by the user or current conversation using `git` and the selected host’s available review tools. Use `gh` only for GitHub repositories. In this skill, “PR” also includes a host’s equivalent merge request. “Ship this”, `$ship`, or a specified PR authorizes committing the scoped work, preparing its version when the applicable policy calls for it, maintaining its changelog, pushing, merging into the default branch, and safely cleaning up its delivered worktrees and merged PR branches. This includes implementation worktrees created before ship began when ownership, delivery, and non-use are proven below. “Main” means the repository's actual default branch. Do not ask for a second approval of these actions. Select the recommended version when the project policy calls for one. Ask only when an unresolved compatibility decision or conflicting release policy prevents that selection.
+Ship the work identified by the user or current conversation using `git` and the selected host’s available review tools. Use `gh` only for GitHub repositories. In this skill, “PR” also includes a host’s equivalent merge request. “Ship this”, `$ship`, a specified PR, or step 6 of a hap-mode `full send` run authorizes committing the scoped work, preparing its version when the applicable policy calls for it, maintaining its changelog, pushing, merging into the default branch, and safely cleaning up its delivered worktrees and merged PR branches. This includes implementation worktrees created before ship began when ownership, delivery, and non-use are proven below. “Main” means the repository's actual default branch. Do not ask for a second approval of these actions. Select the recommended version when the project policy calls for one. Ask only when an unresolved compatibility decision or conflicting release policy prevents that selection.
 
 “Release this” uses the same version-and-delivery workflow and follows the project’s existing release process. Neither phrase by itself introduces tags or GitHub releases. Create or publish those only when explicitly requested or required by the established project release workflow; a historical tag alone does not establish that requirement. A project that tracks releases solely in its manifest and changelog continues doing so. Neither phrase authorizes deployment commands, package-registry publishing, or notification messages. Existing repository automation may run after a push or merge; honor active constraints on its consequences.
 
@@ -80,17 +80,7 @@ Include necessary stack ancestors and ordinary retargeting within the requested 
 
 ### Write public-facing changelogs
 
-Treat every project's changelog and release notes as public-facing product documentation, including private projects and developer tools. Describe added, changed, fixed, deprecated, removed, or security-related behavior that users can observe. Group related changes into concise entries that say what the product does now. Include documentation changes when they change guidance users rely on. Omit changes with no user-visible effect rather than narrating the work.
-
-Exclude agent work narration, tests run or their results, local-machine setup, commands and checklists performed, internal execution, and packaging or proof procedures. Exclude hostnames, local paths, and private identifiers. A setup feature or testing-tool improvement belongs when it changes the product for its users. Setup or tests performed merely to get one operator's machine working do not.
-
-Keep required release versions, YYYY-MM-DD dates, meaningful compatibility requirements, breaking-change notices, and migration guidance. User-facing commands can appear when needed to explain changed behavior or migration.
-
-Examples:
-
-- Good: "The test runner reports skipped tests in its summary." Bad: "Ran the test suite and confirmed it passed."
-- Good: "Setup preserves existing project settings during upgrades." Bad: "Configured the local machine and checked the package contents."
-- Good: "Changelog entries describe user-visible product changes." Bad: "Updated the shipping docs and verified the new wording."
+Follow the bundled [changelog skill](../changelog/SKILL.md) for finding, creating, updating, and releasing the changelog, including its check that keeps the project's changelog policy current, and its [writing guide](../changelog/references/writing.md) for every entry and release note. Entries are written for people who use the product, who may not be technical. Before delivery, make sure Unreleased covers every meaningful change in the shipment, including behind-the-scenes work, and add what is missing.
 
 ## Ship local work directly
 
